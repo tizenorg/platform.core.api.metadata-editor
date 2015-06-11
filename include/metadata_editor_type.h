@@ -53,8 +53,7 @@ typedef enum
  * @brief The enumerations of attribute
  * @since_tizen 2.4
  */
-typedef enum
-{
+typedef enum {
 	METADATA_EDITOR_ATTR_ARTIST,					/**< Artist*/
 	METADATA_EDITOR_ATTR_TITLE,					/**< Title*/
 	METADATA_EDITOR_ATTR_ALBUM,					/**< Album*/
