@@ -1,6 +1,6 @@
 Name:       capi-media-metadata-editor
 Summary:    A metadata editor library in SLP C API
-Version: 0.1.1
+Version: 0.1.3
 Release:    0
 Group:      System/Libraries
 License:    Apache-2.0
@@ -28,12 +28,16 @@ A metadata editor library in SLP C API
 %setup -q
 
 %build
+export CFLAGS+=" -Wextra -Wno-array-bounds"
+export CFLAGS+=" -Wno-ignored-qualifiers -Wno-unused-parameter -Wshadow"
+export CFLAGS+=" -Wwrite-strings -Wswitch-default"
 MAJORVER=`echo %{version} | awk 'BEGIN {FS="."}{print $1}'`
 %cmake . -DFULLVER=%{version} -DMAJORVER=${MAJORVER}
 
 make %{?jobs:-j%jobs}
 
 %install
+rm -rf %{buildroot}
 %make_install
 mkdir -p %{buildroot}/%{_datadir}/license
 cp -rf %{_builddir}/%{name}-%{version}/LICENSE.APLv2.0 %{buildroot}/%{_datadir}/license/%{name}

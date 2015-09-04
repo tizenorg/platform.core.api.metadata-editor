@@ -21,7 +21,7 @@
 
 #include <metadata_editor.h>
 
-#define SAFE_FREE(src)		{ if(src) {free(src); src = NULL;}}
+#define SAFE_FREE(src)		{ if (src) {free(src); src = NULL; } }
 
 int dummy;
 
@@ -34,8 +34,8 @@ static bool __delete_pictures(metadata_editor_h metadata);
 
 void __flush()
 {
-	char c;
-	while ((c = getc(stdin)) != '\n');
+	int c;
+	while ((c = getc(stdin)) != 10);
 }
 
 void __printRetValue(const char *func_name, int result)
@@ -142,11 +142,13 @@ static bool __get_tag_info(metadata_editor_h metadata)
 					int size = 30;
 					char picture_file_name[size];
 					snprintf(picture_file_name, size, "outputFile_%u" , i + 1);
-					if (strncmp(picture_type, "image/jpeg", strlen("image/jpeg")) == 0)		strcat(picture_file_name, ".jpg");
-					else if (strncmp(picture_type, "image/png", strlen("image/jpeg")) == 0)	strcat(picture_file_name, ".png");
+					if (strncmp(picture_type, "image/jpeg", strlen("image/jpeg")) == 0)		strncat(picture_file_name, ".jpg", strlen(".jpg"));
+					else if (strncmp(picture_type, "image/png", strlen("image/jpeg")) == 0)	strncat(picture_file_name, ".png", strlen(".png"));
 					FILE *fout = fopen(picture_file_name, "wb");
-					fwrite(picture, picture_size, 1, fout);
-					fclose(fout);
+					if (fout) {
+						fwrite(picture, picture_size, 1, fout);
+						fclose(fout);
+					}
 				} else
 					printf("Error occured while picture extraction\n");
 			}
@@ -309,18 +311,20 @@ static bool __add_picture(metadata_editor_h metadata)
 		case 1:
 			printf("\n===========================");
 			printf("\n Your choice is TestImage.png\n");
-			picture_filename = "TestImage.png";
+			picture_filename = strdup("TestImage.png");
 			break;
 
 		case 2:
 			printf("\n===========================");
 			printf("\n Your choice is TestImage.jpg\n");
-			picture_filename = "TestImage.jpg";
+			picture_filename = strdup("TestImage.jpg");
+			break;
+		default:
 			break;
 	}
 
 	metadata_editor_append_picture(metadata, picture_filename);
-
+	SAFE_FREE(picture_filename);
 	return true;
 }
 
@@ -433,6 +437,8 @@ int main(int argc, char *argv[])
 				printf("\n==============");
 				printf("\n Saving updated tags \n");
 				__save_tags(metadata);
+				break;
+			default:
 				break;
 		}
 	}

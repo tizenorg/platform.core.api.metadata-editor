@@ -31,10 +31,11 @@ static int __MP4_getIntegerItem(metadata_editor_s* _metadata, const char* itemna
 static int __MP4_updateStringItem(metadata_editor_s* _metadata, const char* itemname, const char* value);
 static int __MP4_updateIntegerItem(metadata_editor_s* _metadata, const char* itemname, const char* value);
 static int __MP4_getNumberOfPictures(metadata_editor_s* _metadata, char** value);
+#if 0
 static int __xiph_getFieldValue(metadata_editor_s* _metadata, TagLib::Ogg::XiphComment* xtag, const char* fieldname, char** value);
 static int __xiph_updateFieldValue(metadata_editor_s* _metadata, TagLib::Ogg::XiphComment* xtag, const char* fieldname, const char* value);
 static int __FLAC_getNumberOfPictures(metadata_editor_s* _metadata, char** value);
-
+#endif
 typedef enum
 {
 	METADATA_EDITOR_FORMAT_MP3	= 0,				/**< MP3 File */
@@ -52,25 +53,13 @@ typedef enum
 static int __ID3_getTwixFrameByName(metadata_editor_s* _metadata, TagLib::ID3v1::Tag* tag1, TagLib::ID3v2::Tag* tag2, const char* frameID, char** value)
 {
 	// Check if we have valid arguments to work with
-	if((_metadata == NULL) || (frameID == NULL))
-	{
-		metadata_editor_error("INVALID PARAMETER\n");
-		*value = NULL;
-		return METADATA_EDITOR_ERROR_INVALID_PARAMETER;
-	}
-	if(value == NULL)
-	{
-		metadata_editor_error("INVALID Value Pointer\n");
-		return METADATA_EDITOR_ERROR_INVALID_PARAMETER;
-	}
+	metadata_editor_retvm_if(_metadata == NULL, METADATA_EDITOR_ERROR_INVALID_PARAMETER, "INVALID PARAMETER");
+	metadata_editor_retvm_if(frameID == NULL, METADATA_EDITOR_ERROR_INVALID_PARAMETER, "INVALID PARAMETER");
+	metadata_editor_retvm_if(value == NULL, METADATA_EDITOR_ERROR_INVALID_PARAMETER, "INVALID PARAMETER");
 
 	// Check if the file, given through metadata, exists and is opened correctly
-	if(_metadata->file && _metadata->isOpen == false)
-	{
-		metadata_editor_error("File does not exist or you have no rights to open it\n");
-		*value = NULL;
-		return METADATA_EDITOR_ERROR_PERMISSION_DENIED;
-	}
+	*value = NULL;
+	metadata_editor_retvm_if(_metadata->file && _metadata->isOpen == false, METADATA_EDITOR_ERROR_PERMISSION_DENIED, "File does not exist or you have no rights to open it\n");
 
 	// Check if the frame is empty (nothing to read) or ID3v2 tag does not exist
 	if(!tag2 || tag2->frameListMap()[frameID].isEmpty())
@@ -79,7 +68,6 @@ static int __ID3_getTwixFrameByName(metadata_editor_s* _metadata, TagLib::ID3v1:
 		// Check if the tag ID3v1 is also empty or does not exist
 		if(!tag1 || tag1->isEmpty())
 		{
-			*value = NULL;
 			metadata_editor_info("The frame %s in ID3v1 tag is empty as well\n", frameID);
 			return METADATA_EDITOR_ERROR_NONE;
 		}
@@ -118,51 +106,28 @@ static int __ID3_getTwixFrameByName(metadata_editor_s* _metadata, TagLib::ID3v1:
 				if(!str.isLatin1()) isUTF = true;
 				metadata_editor_info("String is %sUTF\n", (isUTF ? "" : "not "));
 				length = strlen(str.toCString(isUTF));
-				if(length == 0)
-				{
-					*value = NULL;
-					metadata_editor_info("Empty string...\n");
-					return METADATA_EDITOR_ERROR_NONE;
-				}
-				*value = new char[length + 1];
-				if(*value == NULL)
-				{
-					metadata_editor_error("OUT_OF_MEMORY\n");
-					return METADATA_EDITOR_ERROR_OUT_OF_MEMORY;
-				}
-				strcpy(*value, str.toCString(isUTF));
+				metadata_editor_retvm_if(length == 0,METADATA_EDITOR_ERROR_NONE,"Empty string...\n");
+				*value = strndup(str.toCString(isUTF), length);
 				return METADATA_EDITOR_ERROR_NONE;
 			}
 
-			uint size = 20;
-			char buf[size];
+			char buf[META_MAX_BUF_LEN] = {0, };
 
 			if(!strcmp(frameID, "TRCK"))			// track
 			{
 				// Convert int into char[]
-				snprintf(buf, size, "%u", tag1->track()); found = true;
+				snprintf(buf, META_MAX_BUF_LEN, "%u", tag1->track()); found = true;
 			}
 			else if(!strcmp(frameID, "TDRC"))		// data (year)
 			{
 				// Convert int into char[]
-				snprintf(buf, size, "%u", tag1->year()); found = true;
+				snprintf(buf, META_MAX_BUF_LEN, "%u", tag1->year()); found = true;
 			}
 			if(found)
 			{
 				length = strlen(buf);
-				if(length == 0)
-				{
-					*value = NULL;
-					metadata_editor_info("Empty string...\n");
-					return METADATA_EDITOR_ERROR_NONE;
-				}
-				*value = new char[length + 1];
-				if(*value == NULL)
-				{
-					metadata_editor_error("OUT_OF_MEMORY\n");
-					return METADATA_EDITOR_ERROR_OUT_OF_MEMORY;
-				}
-				strcpy(*value, buf);
+				metadata_editor_retvm_if(length == 0,METADATA_EDITOR_ERROR_NONE,"Empty string...\n");
+				*value = strndup(buf, length);
 				return METADATA_EDITOR_ERROR_NONE;
 			}
 			// The desired frame was not found
@@ -178,20 +143,8 @@ static int __ID3_getTwixFrameByName(metadata_editor_s* _metadata, TagLib::ID3v1:
 		if(!str.isLatin1()) isUTF = true;
 		metadata_editor_info("String is %sUTF\n", (isUTF ? "" : "not "));
 		uint length = strlen(str.toCString(isUTF));
-		if(length == 0)
-		{
-			*value = NULL;
-			metadata_editor_info("Empty string...\n");
-			return METADATA_EDITOR_ERROR_NONE;
-		}
-		// Allocate the memory and copy the value to this memory
-		*value = new char[length + 1];
-		if(*value == NULL)
-		{
-			metadata_editor_error("OUT_OF_MEMORY\n");
-			return METADATA_EDITOR_ERROR_OUT_OF_MEMORY;
-		}
-		strcpy(*value, str.toCString(isUTF));
+		metadata_editor_retvm_if(length == 0,METADATA_EDITOR_ERROR_NONE,"Empty string...\n");
+		*value = strndup(str.toCString(isUTF), length);
 
 		return METADATA_EDITOR_ERROR_NONE;
 	}
@@ -202,30 +155,16 @@ static int __ID3_getTwixFrameByName(metadata_editor_s* _metadata, TagLib::ID3v1:
 static int __ID3_setTwixFrameByName(metadata_editor_s* _metadata, TagLib::ID3v1::Tag* tag1, TagLib::ID3v2::Tag* tag2, const char* frameID, const char* value)
 {
 	// Check if we have valid arguments to work with
-	if((_metadata == NULL) || (frameID == NULL))
-	{
-		metadata_editor_error("INVALID PARAMETER\n");
-		return METADATA_EDITOR_ERROR_INVALID_PARAMETER;
-	}
+	metadata_editor_retvm_if(_metadata == NULL, METADATA_EDITOR_ERROR_INVALID_PARAMETER, "INVALID PARAMETER");
+	metadata_editor_retvm_if(frameID == NULL, METADATA_EDITOR_ERROR_INVALID_PARAMETER, "INVALID PARAMETER");
 
 	// Check if the file, given through metadata, exists and is opened correctly
-	if(_metadata->file && _metadata->isOpen == false)
-	{
-		metadata_editor_error("File does not exist or you have no rights to open it\n");
-		return METADATA_EDITOR_ERROR_PERMISSION_DENIED;
-	}
-	if(_metadata->isReadOnly)					// Check if the file is writable or it is readonly
-	{
-		metadata_editor_error("File is readonly. Unable to modify\n");
-		return METADATA_EDITOR_ERROR_OPERATION_FAILED;
-	}
+	metadata_editor_retvm_if(_metadata->file && _metadata->isOpen == false,METADATA_EDITOR_ERROR_PERMISSION_DENIED,"File does not exist or you have no rights to open it\n");
+	metadata_editor_retvm_if(_metadata->isReadOnly, METADATA_EDITOR_ERROR_OPERATION_FAILED, "File is readonly. Unable to modify\n");
 
 	// Check if the valid tag pointer exists
-	if(tag2 == NULL)
-	{
-		metadata_editor_error("Error. ID3v2 tag was not created. Can not proceed metadata updating\n");
-		return METADATA_EDITOR_ERROR_OPERATION_FAILED;
-	}
+	metadata_editor_retvm_if(tag2 == NULL, METADATA_EDITOR_ERROR_OPERATION_FAILED, "Error. ID3v2 tag was not created. Can not proceed metadata updating");
+
 	// If the pointer is NULL or c-string is empty - handle as request for deletion
 	if(!value || (*value == '\0'))
 	{
@@ -248,11 +187,8 @@ static int __ID3_setTwixFrameByName(metadata_editor_s* _metadata, TagLib::ID3v1:
 		metadata_editor_info("The frame %s does not exist. Creating.\n", frameID);
 		// This is a common frame type for textural frames except comment frame
 		TagLib::ID3v2::TextIdentificationFrame* fr = new TagLib::ID3v2::TextIdentificationFrame(frameID);
-		if(fr == NULL)
-		{
-			metadata_editor_error("OUT_OF_MEMORY\n");
-			return METADATA_EDITOR_ERROR_OUT_OF_MEMORY;
-		}
+		metadata_editor_retvm_if(fr == NULL,METADATA_EDITOR_ERROR_OUT_OF_MEMORY,"OUT_OF_MEMORY");
+
 		fr->setTextEncoding(TagLib::String::UTF8);
 		fr->setText(TagLib::String(value,TagLib::String::UTF8));
 		tag2->addFrame(fr);
@@ -285,89 +221,45 @@ static int __ID3_setTwixFrameByName(metadata_editor_s* _metadata, TagLib::ID3v1:
 static int __ID3_getFrameByName(metadata_editor_s* _metadata, TagLib::ID3v2::Tag* tag2, const char* frameID, char** value)
 {
 	// Check if we have valid arguments to work with
-	if((_metadata == NULL) || (frameID == NULL))
-	{
-		metadata_editor_error("INVALID PARAMETER\n");
-		*value = NULL;
-		return METADATA_EDITOR_ERROR_INVALID_PARAMETER;
-	}
-	if(value == NULL)
-	{
-		metadata_editor_error("INVALID Value Pointer\n");
-		return METADATA_EDITOR_ERROR_INVALID_PARAMETER;
-	}
+	metadata_editor_retvm_if(_metadata == NULL, METADATA_EDITOR_ERROR_INVALID_PARAMETER, "INVALID PARAMETER");
+	metadata_editor_retvm_if(frameID == NULL, METADATA_EDITOR_ERROR_INVALID_PARAMETER, "INVALID PARAMETER");
+	metadata_editor_retvm_if(value == NULL, METADATA_EDITOR_ERROR_INVALID_PARAMETER, "INVALID PARAMETER");
+
 
 	// Check if the file, given through metadata, exists and is opened correctly
-	if(_metadata->file && _metadata->isOpen == false)
-	{
-		metadata_editor_error("File does not exist or you have no rights to open it\n");
-		*value = NULL;
-		return METADATA_EDITOR_ERROR_PERMISSION_DENIED;
-	}
+	*value = NULL;
+	metadata_editor_retvm_if(_metadata->file && _metadata->isOpen == false,METADATA_EDITOR_ERROR_PERMISSION_DENIED,"File does not exist or you have no rights to open it\n");
 
 	// Check if the frame is empty (nothing to read) or ID3v2 tag does not exist
-	if (!tag2 || tag2->frameListMap()[frameID].isEmpty())
-	{
-		metadata_editor_info("The frame %s does not exist\n", frameID);
-		*value = NULL;
-		return METADATA_EDITOR_ERROR_NONE;
-	}
-	else                // frame exists - read it
-	{
-		metadata_editor_info("The frame %s exists\n", frameID);
-		// This string is used to copy the value in the frame
-		TagLib::String str = tag2->frameListMap()[frameID][0]->toString();
-		bool isUTF = false;
-		if(!str.isLatin1()) isUTF = true;
-		metadata_editor_info("String is %sUTF\n", (isUTF ? "" : "not "));
-		uint length = strlen(str.toCString(isUTF));
-		if(length == 0)
-		{
-			*value = NULL;
-			metadata_editor_info("Empty string...\n");
-			return METADATA_EDITOR_ERROR_NONE;
-		}
-		// Allocate the memory and copy the value to this memory
-		*value = new char[length + 1];
-		if(*value == NULL)
-		{
-			metadata_editor_error("OUT_OF_MEMORY\n");
-			return METADATA_EDITOR_ERROR_OUT_OF_MEMORY;
-		}
-		strcpy(*value, str.toCString(isUTF));
+	metadata_editor_retvm_if(!tag2 || tag2->frameListMap()[frameID].isEmpty(),METADATA_EDITOR_ERROR_NONE,"The frame %s does not exist\n", frameID);
 
-		return METADATA_EDITOR_ERROR_NONE;
-	}
+	metadata_editor_info("The frame %s exists\n", frameID);
+	// This string is used to copy the value in the frame
+	TagLib::String str = tag2->frameListMap()[frameID][0]->toString();
+	bool isUTF = false;
+	if(!str.isLatin1()) isUTF = true;
+	metadata_editor_info("String is %sUTF\n", (isUTF ? "" : "not "));
+	uint length = strlen(str.toCString(isUTF));
+	metadata_editor_retvm_if(length == 0,METADATA_EDITOR_ERROR_NONE,"Empty string...\n");
+	*value = strndup(str.toCString(isUTF), length);
+
+	return METADATA_EDITOR_ERROR_NONE;
 }
 
 // *** This function writes frames that exist only in ID3v2 tag *** //
 static int __ID3_setFrameByName(metadata_editor_s* _metadata, TagLib::ID3v2::Tag* tag2, const char* frameID, const char* value)
 {
 	// Check if we have valid arguments to work with
-	if((_metadata == NULL) || (frameID == NULL))
-	{
-		metadata_editor_error("INVALID PARAMETER\n");
-		return METADATA_EDITOR_ERROR_INVALID_PARAMETER;
-	}
+	metadata_editor_retvm_if(_metadata == NULL, METADATA_EDITOR_ERROR_INVALID_PARAMETER, "INVALID PARAMETER");
+	metadata_editor_retvm_if(frameID == NULL, METADATA_EDITOR_ERROR_INVALID_PARAMETER, "INVALID PARAMETER");
 
 	// Check if the file, given through metadata, exists and is opened correctly
-	if(_metadata->file && _metadata->isOpen == false)
-	{
-		metadata_editor_error("File does not exist or you have no rights to open it\n");
-		return METADATA_EDITOR_ERROR_PERMISSION_DENIED;
-	}
-	if(_metadata->isReadOnly)					// Check if the file is writable or it is readonly
-	{
-		metadata_editor_error("File is readonly. Unable to modify\n");
-		return METADATA_EDITOR_ERROR_OPERATION_FAILED;
-	}
+	metadata_editor_retvm_if(_metadata->file && _metadata->isOpen == false,METADATA_EDITOR_ERROR_PERMISSION_DENIED,"File does not exist or you have no rights to open it\n");
+	metadata_editor_retvm_if(_metadata->isReadOnly, METADATA_EDITOR_ERROR_OPERATION_FAILED, "File is readonly. Unable to modify\n");
 
 	// Check if the valid tag pointer exist
-	if(tag2 == NULL)
-	{
-		metadata_editor_error("Error. ID3v2 tag was not created. Can not proceed metadata updating\n");
-		return METADATA_EDITOR_ERROR_OPERATION_FAILED;
-	}
+	metadata_editor_retvm_if(tag2 == NULL, METADATA_EDITOR_ERROR_OPERATION_FAILED, "Error. ID3v2 tag was not created. Can not proceed metadata updating");
+
 	// If the pointer is NULL or c-string is empty - handle as request for deletion
 	if(!value || (*value == '\0'))
 	{
@@ -382,11 +274,8 @@ static int __ID3_setFrameByName(metadata_editor_s* _metadata, TagLib::ID3v2::Tag
 		metadata_editor_info("The frame %s does not exist. Creating.\n", frameID);
 		// This is a common frame type for textural frames except comment frame
 		TagLib::ID3v2::TextIdentificationFrame* fr = new TagLib::ID3v2::TextIdentificationFrame(frameID);
-		if(fr == NULL)
-		{
-			metadata_editor_error("OUT_OF_MEMORY\n");
-			return METADATA_EDITOR_ERROR_OUT_OF_MEMORY;
-		}
+		metadata_editor_retvm_if(fr == NULL,METADATA_EDITOR_ERROR_OUT_OF_MEMORY,"OUT_OF_MEMORY");
+
 		fr->setTextEncoding(TagLib::String::UTF8);
 		fr->setText(TagLib::String(value,TagLib::String::UTF8));
 		tag2->addFrame(fr);
@@ -403,60 +292,27 @@ static int __ID3_setFrameByName(metadata_editor_s* _metadata, TagLib::ID3v2::Tag
 static int __ID3_getNumberOfPictures(metadata_editor_s* _metadata, TagLib::ID3v2::Tag* tag2, char** value)
 {
 	// Check if parameters are valid
-	if(_metadata == NULL)
-	{
-		metadata_editor_error("INVALID Handle\n");
-		*value = NULL;
-		return METADATA_EDITOR_ERROR_INVALID_PARAMETER;
-	}
-	if((value == NULL))
-	{
-		metadata_editor_error("INVALID Value Pointer\n");
-		return METADATA_EDITOR_ERROR_INVALID_PARAMETER;
-	}
+	metadata_editor_retvm_if(_metadata == NULL, METADATA_EDITOR_ERROR_INVALID_PARAMETER, "INVALID PARAMETER");
+	metadata_editor_retvm_if(value == NULL, METADATA_EDITOR_ERROR_INVALID_PARAMETER, "INVALID PARAMETER");
 
 	// Check if the file, given through metadata, exists and is opened correctly
-	if(_metadata->file && _metadata->isOpen == false)
-	{
-		metadata_editor_error("File does not exist or you have no rights to open it\n");
-		*value = NULL;
-		return METADATA_EDITOR_ERROR_PERMISSION_DENIED;
-	}
+	*value = NULL;
+	metadata_editor_retvm_if(_metadata->file && _metadata->isOpen == false,METADATA_EDITOR_ERROR_PERMISSION_DENIED,"File does not exist or you have no rights to open it\n");
 
 	// Check if the valid tag pointer exist
-	if(tag2 == NULL)
-	{
-		metadata_editor_error("Error. ID3v2 tag does not exist. Can not process further\n");
-		*value = NULL;
-		return METADATA_EDITOR_ERROR_OPERATION_FAILED;
-	}
+	metadata_editor_retvm_if(tag2 == NULL, METADATA_EDITOR_ERROR_OPERATION_FAILED, "Error. ID3v2 tag does not exist. Can not process further");
 
 	TagLib::ID3v2::FrameList lst = tag2->frameListMap()["APIC"];        // link to picture frames in tag
 	// Check if the frames exist
-	if(lst.isEmpty())
-	{
-		metadata_editor_info("No pictures in file\n");
-		*value = NULL;
-		return METADATA_EDITOR_ERROR_NONE;
-	}
-	else                // picture frames exist
-	{
-		metadata_editor_info("APIC frames exist in file\n");
-		int size = 20;
-		char buf[size];
-		// Convert the number of frames (lst.size()) to c-string
-		snprintf(buf, size, "%u", lst.size());
-		uint length = strlen(buf);
-		*value = new char[length + 1];
-		if(*value == NULL)
-		{
-			metadata_editor_error("OUT_OF_MEMORY\n");
-			return METADATA_EDITOR_ERROR_OUT_OF_MEMORY;
-		}
-		// Copy c-string to value for returning
-		strcpy(*value, buf);
-		return METADATA_EDITOR_ERROR_NONE;
-	}
+	metadata_editor_retvm_if(lst.isEmpty(), METADATA_EDITOR_ERROR_NONE, "No pictures in file\n");
+
+	metadata_editor_info("APIC frames exist in file\n");
+	char buf[META_MAX_BUF_LEN] = {0, };
+	// Convert the number of frames (lst.size()) to c-string
+	snprintf(buf, META_MAX_BUF_LEN, "%u", lst.size());
+	*value = strndup(buf, strlen(buf));
+	return METADATA_EDITOR_ERROR_NONE;
+
 }
 
 // *** This function is used to receive unsynchronized lyrics from ID3v2 tag in file *** //
@@ -464,67 +320,31 @@ static int __ID3_getNumberOfPictures(metadata_editor_s* _metadata, TagLib::ID3v2
 static int __ID3_getLyricsFrame(metadata_editor_s* _metadata, TagLib::ID3v2::Tag* tag2, char** value)
 {
 	// Check if parameters are valid
-	if(_metadata == NULL)
-	{
-		metadata_editor_error("INVALID Handle\n");
-		*value = NULL;
-		return METADATA_EDITOR_ERROR_INVALID_PARAMETER;
-	}
-	if((value == NULL))
-	{
-		metadata_editor_error("INVALID Value Pointer\n");
-		return METADATA_EDITOR_ERROR_INVALID_PARAMETER;
-	}
+	metadata_editor_retvm_if(_metadata == NULL, METADATA_EDITOR_ERROR_INVALID_PARAMETER, "INVALID PARAMETER");
+	metadata_editor_retvm_if(value == NULL, METADATA_EDITOR_ERROR_INVALID_PARAMETER, "INVALID PARAMETER");
 
 	// Check if the file, given through metadata, exists and is opened correctly
-	if(_metadata->file && _metadata->isOpen == false)
-	{
-		metadata_editor_error("File does not exist or you have no rights to open it\n");
-		*value = NULL;
-		return METADATA_EDITOR_ERROR_PERMISSION_DENIED;
-	}
+	*value = NULL;
+	metadata_editor_retvm_if(_metadata->file && _metadata->isOpen == false,METADATA_EDITOR_ERROR_PERMISSION_DENIED,"File does not exist or you have no rights to open it\n");
 
 	// Check if the valid tag pointer exist
-	if(tag2 == NULL)
-	{
-		metadata_editor_error("Error. ID3v2 tag does not exist. Can not process further\n");
-		*value = NULL;
-		return METADATA_EDITOR_ERROR_OPERATION_FAILED;
-	}
+	metadata_editor_retvm_if(tag2 == NULL,METADATA_EDITOR_ERROR_OPERATION_FAILED,"Error. ID3v2 tag does not exist. Can not process further");
 
 	TagLib::ID3v2::FrameList lst = tag2->frameListMap()["USLT"];        // link to unsynchronized lyric frames in tag
 	// Check if frames exist in file
-	if(lst.isEmpty())
-	{
-		metadata_editor_info("The frame USLT does not exist\n");
-		*value = NULL;
-		return METADATA_EDITOR_ERROR_NONE;
-	}
-	else
-	{
-		metadata_editor_info("The frame USLT exists\n");
-		TagLib::ID3v2::FrameList::Iterator it = lst.begin();
-		TagLib::ID3v2::UnsynchronizedLyricsFrame* frame = static_cast<TagLib::ID3v2::UnsynchronizedLyricsFrame*>(*it);
-		TagLib::String str = frame->text();
-		bool isUTF = false;
-		if(!str.isLatin1()) isUTF = true;
-		metadata_editor_info("String is %sUTF\n", (isUTF ? "" : "not "));
-		uint length = strlen(str.toCString(isUTF));
-		if(length == 0)
-		{
-			*value = NULL;
-			metadata_editor_info("Empty string...\n");
-			return METADATA_EDITOR_ERROR_NONE;
-		}
-		*value = new char[length + 1];
-		if(*value == NULL)
-		{
-			metadata_editor_error("OUT_OF_MEMORY\n");
-			return METADATA_EDITOR_ERROR_OUT_OF_MEMORY;
-		}
-		strcpy(*value, str.toCString(isUTF));
-		return METADATA_EDITOR_ERROR_NONE;
-	}
+	metadata_editor_retvm_if(lst.isEmpty(),METADATA_EDITOR_ERROR_NONE,"The frame USLT does not exist\n");
+
+	metadata_editor_info("The frame USLT exists\n");
+	TagLib::ID3v2::FrameList::Iterator it = lst.begin();
+	TagLib::ID3v2::UnsynchronizedLyricsFrame* frame = static_cast<TagLib::ID3v2::UnsynchronizedLyricsFrame*>(*it);
+	TagLib::String str = frame->text();
+	bool isUTF = false;
+	if(!str.isLatin1()) isUTF = true;
+	metadata_editor_info("String is %sUTF\n", (isUTF ? "" : "not "));
+	uint length = strlen(str.toCString(isUTF));
+	metadata_editor_retvm_if(length == 0, METADATA_EDITOR_ERROR_NONE, "Empty string...\n");
+	*value = strndup(str.toCString(isUTF), length);
+	return METADATA_EDITOR_ERROR_NONE;
 }
 
 // *** This function is used to set text in comment frame. It processes both ID3v1 and ID3v2 tags *** //
@@ -532,30 +352,14 @@ static int __ID3_getLyricsFrame(metadata_editor_s* _metadata, TagLib::ID3v2::Tag
 static int __ID3_setTwixCommentFrame(metadata_editor_s* _metadata, TagLib::ID3v1::Tag* tag1, TagLib::ID3v2::Tag* tag2, const char* value)
 {
 	// Check if we have a valid argument to work with
-	if(_metadata == NULL)
-	{
-		metadata_editor_error("INVALID Handle\n");
-		return METADATA_EDITOR_ERROR_INVALID_PARAMETER;
-	}
+	metadata_editor_retvm_if(_metadata == NULL, METADATA_EDITOR_ERROR_INVALID_PARAMETER, "INVALID PARAMETER");
 
 	// Check if the file, given through metadata, exists and is opened correctly
-	if(_metadata->file && _metadata->isOpen == false)
-	{
-		metadata_editor_error("File does not exist or you have no rights to open it\n");
-		return METADATA_EDITOR_ERROR_PERMISSION_DENIED;
-	}
-	if(_metadata->isReadOnly)					// Check if the file is writable or it is readonly
-	{
-		metadata_editor_error("File is readonly. Unable to modify\n");
-		return METADATA_EDITOR_ERROR_OPERATION_FAILED;
-	}
+	metadata_editor_retvm_if(_metadata->file && _metadata->isOpen == false,METADATA_EDITOR_ERROR_PERMISSION_DENIED,"File does not exist or you have no rights to open it\n");
+	metadata_editor_retvm_if(_metadata->isReadOnly, METADATA_EDITOR_ERROR_OPERATION_FAILED, "File is readonly. Unable to modify\n");
 
 	// Check if the valid tag pointer exist
-	if(tag2 == NULL)
-	{
-		metadata_editor_error("Error. ID3v2 tag was not created. Can not proceed metadata updating\n");
-		return METADATA_EDITOR_ERROR_OPERATION_FAILED;
-	}
+	metadata_editor_retvm_if(tag2 == NULL,METADATA_EDITOR_ERROR_OPERATION_FAILED,"Error. ID3v2 tag was not created. Can not proceed metadata updating");
 
 	// If the pointer is NULL or c-string is empty - handle as request for deletion
 	if(!value || (*value == '\0'))
@@ -571,11 +375,7 @@ static int __ID3_setTwixCommentFrame(metadata_editor_s* _metadata, TagLib::ID3v1
 	{
 		metadata_editor_info("The frame COMM does not exist. Creating.\n");
 		TagLib::ID3v2::CommentsFrame* fr = new TagLib::ID3v2::CommentsFrame;
-		if(fr == NULL)
-		{
-			metadata_editor_error("OUT_OF_MEMORY\n");
-			return METADATA_EDITOR_ERROR_OUT_OF_MEMORY;
-		}
+		metadata_editor_retvm_if(fr == NULL, METADATA_EDITOR_ERROR_OUT_OF_MEMORY, "OUT_OF_MEMORY\n");
 		fr->setText(TagLib::String(value, TagLib::String::UTF8));
 		fr->setTextEncoding(TagLib::String::UTF8);
 		tag2->addFrame(fr);
@@ -598,30 +398,14 @@ static int __ID3_setTwixCommentFrame(metadata_editor_s* _metadata, TagLib::ID3v1
 static int __ID3_setLyricsFrame(metadata_editor_s* _metadata, TagLib::ID3v2::Tag* tag2, const char* value)
 {
 	// Check if we have a valid argument to work with
-	if(_metadata == NULL)
-	{
-		metadata_editor_error("INVALID Handle\n");
-		return METADATA_EDITOR_ERROR_INVALID_PARAMETER;
-	}
+	metadata_editor_retvm_if(_metadata == NULL, METADATA_EDITOR_ERROR_INVALID_PARAMETER, "INVALID PARAMETER");
 
 	// Check if the file, given through metadata, exists and is opened correctly
-	if(_metadata->file && _metadata->isOpen == false)
-	{
-		metadata_editor_error("File does not exist or you have no rights to open it\n");
-		return METADATA_EDITOR_ERROR_PERMISSION_DENIED;
-	}
-	if(_metadata->isReadOnly)						// Check if the file is writable or it is readonly
-	{
-		metadata_editor_error("File is readonly. Unable to modify\n");
-		return METADATA_EDITOR_ERROR_OPERATION_FAILED;
-	}
+	metadata_editor_retvm_if(_metadata->file && _metadata->isOpen == false,METADATA_EDITOR_ERROR_PERMISSION_DENIED,"File does not exist or you have no rights to open it\n");
+	metadata_editor_retvm_if(_metadata->isReadOnly, METADATA_EDITOR_ERROR_OPERATION_FAILED, "File is readonly. Unable to modify\n");
 
 	// Check if the valid tag pointer exist
-	if(tag2 == NULL)
-	{
-		metadata_editor_error("Error. ID3v2 tag was not created. Can not proceed metadata updating\n");
-		return METADATA_EDITOR_ERROR_OPERATION_FAILED;
-	}
+	metadata_editor_retvm_if(tag2 == NULL,METADATA_EDITOR_ERROR_OPERATION_FAILED,"Error. ID3v2 tag was not created. Can not proceed metadata updating");
 
 	TagLib::ID3v2::FrameList lst = tag2->frameListMap()["USLT"];	// link to unsynchronized lyric frames in tag
 	// If the pointer is NULL or c-string is empty - handle as request for deletion
@@ -637,11 +421,8 @@ static int __ID3_setLyricsFrame(metadata_editor_s* _metadata, TagLib::ID3v2::Tag
 		// No lyrics - create the frame and add it to the ID3v2 tag
 		metadata_editor_info("The frame USLT does not exist. Creating.\n");
 		TagLib::ID3v2::UnsynchronizedLyricsFrame* frame = new TagLib::ID3v2::UnsynchronizedLyricsFrame;
-		if(frame == NULL)
-		{
-			metadata_editor_error("OUT_OF_MEMORY\n");
-			return METADATA_EDITOR_ERROR_OUT_OF_MEMORY;
-		}
+		metadata_editor_retvm_if(frame == NULL,METADATA_EDITOR_ERROR_OUT_OF_MEMORY,"OUT_OF_MEMORY");
+
 		frame->setTextEncoding(TagLib::String::UTF8);
 		frame->setText(TagLib::String(value,TagLib::String::UTF8));
 		tag2->addFrame(frame);
@@ -661,34 +442,18 @@ static int __ID3_setLyricsFrame(metadata_editor_s* _metadata, TagLib::ID3v2::Tag
 static int __MP4_getStringItem(metadata_editor_s* _metadata, const char* itemname, char** value)
 {
 	// Check if parameters are valid
-	if((_metadata == NULL)|| (itemname == NULL))
-	{
-		metadata_editor_error("INVALID Parameter\n");
-		*value = NULL;
-		return METADATA_EDITOR_ERROR_INVALID_PARAMETER;
-	}
-	if(value == NULL)
-	{
-		metadata_editor_error("INVALID Value Pointer\n");
-		return METADATA_EDITOR_ERROR_INVALID_PARAMETER;
-	}
+	metadata_editor_retvm_if(_metadata == NULL, METADATA_EDITOR_ERROR_INVALID_PARAMETER, "INVALID PARAMETER");
+	metadata_editor_retvm_if(itemname == NULL, METADATA_EDITOR_ERROR_INVALID_PARAMETER, "INVALID PARAMETER");
+	metadata_editor_retvm_if(value == NULL, METADATA_EDITOR_ERROR_INVALID_PARAMETER, "INVALID PARAMETER");
+	metadata_editor_retvm_if(_metadata->file == NULL, METADATA_EDITOR_ERROR_INVALID_PARAMETER, "File loading fail.");
 
 	// Check if the file, given through metadata, exists and is opened correctly
-	if(_metadata->file && _metadata->isOpen == false)
-	{
-		metadata_editor_error("File does not exist or you have no rights to open it\n");
-		*value = NULL;
-		return METADATA_EDITOR_ERROR_PERMISSION_DENIED;
-	}
+	*value = NULL;
+	metadata_editor_retvm_if(_metadata->file && _metadata->isOpen == false,METADATA_EDITOR_ERROR_PERMISSION_DENIED,"File does not exist or you have no rights to open it\n");
 
 	TagLib::MP4::File* _file = (TagLib::MP4::File*) _metadata->file;
 	TagLib::MP4::Tag* tag = _file->tag();
-	if(!tag)									// Check if we have a valid tag for processing
-	{
-		metadata_editor_error("Tag does not exist\n");
-		*value = NULL;
-		return METADATA_EDITOR_ERROR_OPERATION_FAILED;
-	}
+	metadata_editor_retvm_if(tag == NULL,METADATA_EDITOR_ERROR_OPERATION_FAILED,"Tag does not exist");
 
 	// Get map of items directly from tag and launch a search of specific item
 	TagLib::MP4::ItemListMap& itemMap = tag->itemListMap();
@@ -702,26 +467,13 @@ static int __MP4_getStringItem(metadata_editor_s* _metadata, const char* itemnam
 		metadata_editor_info("String is %sUTF\n", (isUTF ? "" : "not "));
 		// Get the length of the string and check if it is empty or not
 		uint length = strlen(str.toCString(isUTF));
-		if(length == 0)
-		{
-			*value = NULL;
-			metadata_editor_info("Empty string...\n");
-			return METADATA_EDITOR_ERROR_NONE;
-		}
-		// Allocate the memory and copy string to output variable
-		*value = new char[length + 1];
-		if(*value == NULL)
-		{
-			metadata_editor_error("OUT_OF_MEMORY\n");
-			return METADATA_EDITOR_ERROR_OUT_OF_MEMORY;
-		}
-		strcpy(*value, str.toCString(isUTF));
+		metadata_editor_retvm_if(length == 0,METADATA_EDITOR_ERROR_NONE,"Empty string...\n");
+		*value = strndup(str.toCString(isUTF), length);
 		return METADATA_EDITOR_ERROR_NONE;
 	}
 	else										// Item was not found
 	{
 		metadata_editor_info("No item <%s> in file\n", itemname);
-		*value = NULL;
 		return METADATA_EDITOR_ERROR_NONE;
 	}
 }
@@ -730,65 +482,36 @@ static int __MP4_getStringItem(metadata_editor_s* _metadata, const char* itemnam
 static int __MP4_getIntegerItem(metadata_editor_s* _metadata, const char* itemname, char** value)
 {
 	// Check if parameters are valid
-	if((_metadata == NULL)|| (itemname == NULL))
-	{
-		metadata_editor_error("INVALID Parameter\n");
-		*value = NULL;
-		return METADATA_EDITOR_ERROR_INVALID_PARAMETER;
-	}
-	if(value == NULL)
-	{
-		metadata_editor_error("INVALID Value Pointer\n");
-		return METADATA_EDITOR_ERROR_INVALID_PARAMETER;
-	}
+	metadata_editor_retvm_if(_metadata == NULL, METADATA_EDITOR_ERROR_INVALID_PARAMETER, "INVALID PARAMETER");
+	metadata_editor_retvm_if(itemname == NULL, METADATA_EDITOR_ERROR_INVALID_PARAMETER, "INVALID PARAMETER");
+	metadata_editor_retvm_if(value == NULL, METADATA_EDITOR_ERROR_INVALID_PARAMETER, "INVALID PARAMETER");
+	metadata_editor_retvm_if(_metadata->file == NULL, METADATA_EDITOR_ERROR_INVALID_PARAMETER, "File loading fail.");
 
 	// Check if the file, given through metadata, exists and is opened correctly
-	if(_metadata->file && _metadata->isOpen == false)
-	{
-		metadata_editor_error("File does not exist or you have no rights to open it\n");
-		*value = NULL;
-		return METADATA_EDITOR_ERROR_PERMISSION_DENIED;
-	}
+	*value = NULL;
+	metadata_editor_retvm_if(_metadata->file && _metadata->isOpen == false,METADATA_EDITOR_ERROR_PERMISSION_DENIED,"File does not exist or you have no rights to open it\n");
 
 	TagLib::MP4::File* _file = (TagLib::MP4::File*) _metadata->file;
 	TagLib::MP4::Tag* tag = _file->tag();
-	if(!tag)									// Check if we have a valid tag for processing
-	{
-		metadata_editor_error("Tag does not exist.\n");
-		*value = NULL;
-		return METADATA_EDITOR_ERROR_OPERATION_FAILED;
-	}
+	metadata_editor_retvm_if(tag == NULL,METADATA_EDITOR_ERROR_OPERATION_FAILED,"Tag does not exist");
 
 	// Get map of items directly from tag and launch a search of specific item
 	TagLib::MP4::ItemListMap& itemMap = tag->itemListMap();
 	TagLib::MP4::ItemListMap::ConstIterator it = itemMap.find(itemname);
 	if(it != itemMap.end())								// Item was found
 	{
-		uint size = 20;
-		char buf[size];
+		char buf[META_MAX_BUF_LEN] = {0, };
 		int num = it->second.toInt();						// Get integer value in item
-		snprintf(buf, size, "%u", num);						// Convert int into char[]
+		snprintf(buf, META_MAX_BUF_LEN, "%u", num);						// Convert int into char[]
 		// Determine the length of created c-string and copy it into the output variable
 		int length = strlen(buf);
-		if(length == 0)
-		{
-			*value = NULL;
-			metadata_editor_info("Empty string...\n");
-			return METADATA_EDITOR_ERROR_NONE;
-		}
-		*value = new char[length + 1];
-		if(*value == NULL)
-		{
-			metadata_editor_error("OUT_OF_MEMORY\n");
-			return METADATA_EDITOR_ERROR_OUT_OF_MEMORY;
-		}
-		strcpy(*value, buf);
+		metadata_editor_retvm_if(length == 0,METADATA_EDITOR_ERROR_NONE,"Empty string...\n");
+		*value = strndup(buf, length);
 		return METADATA_EDITOR_ERROR_NONE;
 	}
 	else										// Item was not found
 	{
 		metadata_editor_info("No item <%s> in file\n", itemname);
-		*value = NULL;
 		return METADATA_EDITOR_ERROR_NONE;
 	}
 }
@@ -797,31 +520,17 @@ static int __MP4_getIntegerItem(metadata_editor_s* _metadata, const char* itemna
 static int __MP4_updateStringItem(metadata_editor_s* _metadata, const char* itemname, const char* value)
 {
 	// Check if parameters are valid
-	if((_metadata == NULL)|| (itemname == NULL))
-	{
-		metadata_editor_error("INVALID Parameter\n");
-		return METADATA_EDITOR_ERROR_INVALID_PARAMETER;
-	}
+	metadata_editor_retvm_if(_metadata == NULL, METADATA_EDITOR_ERROR_INVALID_PARAMETER, "INVALID PARAMETER");
+	metadata_editor_retvm_if(itemname == NULL, METADATA_EDITOR_ERROR_INVALID_PARAMETER, "INVALID PARAMETER");
+	metadata_editor_retvm_if(_metadata->file == NULL, METADATA_EDITOR_ERROR_INVALID_PARAMETER, "File loading fail.");
 
 	// Check if the file, given through metadata, exists and is opened correctly
-	if(_metadata->file && _metadata->isOpen == false)
-	{
-		metadata_editor_error("File does not exist or you have no rights to open it\n");
-		return METADATA_EDITOR_ERROR_PERMISSION_DENIED;
-	}
-	if(_metadata->isReadOnly)							// Check if the file is writable or it is readonly
-	{
-		metadata_editor_error("File is readonly. Unable to modify\n");
-		return METADATA_EDITOR_ERROR_OPERATION_FAILED;
-	}
+	metadata_editor_retvm_if(_metadata->file && _metadata->isOpen == false,METADATA_EDITOR_ERROR_PERMISSION_DENIED,"File does not exist or you have no rights to open it\n");
+	metadata_editor_retvm_if(_metadata->isReadOnly, METADATA_EDITOR_ERROR_OPERATION_FAILED, "File is readonly. Unable to modify\n");
 
 	TagLib::MP4::File* _file = (TagLib::MP4::File*) _metadata->file;
 	TagLib::MP4::Tag* tag = _file->tag();
-	if(!tag)									// Check if we have a valid tag for processing
-	{
-		metadata_editor_error("Tag was not created.\n");
-		return METADATA_EDITOR_ERROR_OPERATION_FAILED;
-	}
+	metadata_editor_retvm_if(tag == NULL,METADATA_EDITOR_ERROR_OPERATION_FAILED,"Tag was not created");
 
 	// Get map of items directly from tag and launch a search of specific item
 	TagLib::MP4::ItemListMap& itemMap = tag->itemListMap();
@@ -843,31 +552,17 @@ static int __MP4_updateStringItem(metadata_editor_s* _metadata, const char* item
 static int __MP4_updateIntegerItem(metadata_editor_s* _metadata, const char* itemname, const char* value)
 {
 	// Check if parameters are valid
-	if((_metadata == NULL) || (itemname == NULL))
-	{
-		metadata_editor_error("INVALID Parameter\n");
-		return METADATA_EDITOR_ERROR_INVALID_PARAMETER;
-	}
+	metadata_editor_retvm_if(_metadata == NULL, METADATA_EDITOR_ERROR_INVALID_PARAMETER, "INVALID PARAMETER");
+	metadata_editor_retvm_if(itemname == NULL, METADATA_EDITOR_ERROR_INVALID_PARAMETER, "INVALID PARAMETER");
+	metadata_editor_retvm_if(_metadata->file == NULL, METADATA_EDITOR_ERROR_INVALID_PARAMETER, "File loading fail.");
 
 	// Check if the file, given through metadata, exists and is opened correctly
-	if(_metadata->file && _metadata->isOpen == false)
-	{
-		metadata_editor_error("File does not exist or you have no rights to open it\n");
-		return METADATA_EDITOR_ERROR_PERMISSION_DENIED;
-	}
-	if(_metadata->isReadOnly)							// Check if the file is writable or it is readonly
-	{
-		metadata_editor_error("File is readonly. Unable to modify\n");
-		return METADATA_EDITOR_ERROR_OPERATION_FAILED;
-	}
+	metadata_editor_retvm_if(_metadata->file && _metadata->isOpen == false,METADATA_EDITOR_ERROR_PERMISSION_DENIED,"File does not exist or you have no rights to open it\n");
+	metadata_editor_retvm_if(_metadata->isReadOnly, METADATA_EDITOR_ERROR_OPERATION_FAILED, "File is readonly. Unable to modify\n");
 
 	TagLib::MP4::File* _file = (TagLib::MP4::File*) _metadata->file;
 	TagLib::MP4::Tag* tag = _file->tag();
-	if(!tag)									// Check if we have a valid tag for processing
-	{
-		metadata_editor_error("Tag was not created.\n");
-		return METADATA_EDITOR_ERROR_OPERATION_FAILED;
-	}
+	metadata_editor_retvm_if(tag == NULL,METADATA_EDITOR_ERROR_OPERATION_FAILED,"Tag was not created");
 
 	// Get map of items directly from tag and launch a search of specific item
 	TagLib::MP4::ItemListMap& itemMap = tag->itemListMap();
@@ -899,34 +594,17 @@ static int __MP4_updateIntegerItem(metadata_editor_s* _metadata, const char* ite
 static int __MP4_getNumberOfPictures(metadata_editor_s* _metadata, char** value)
 {
 	// Check if parameters are valid
-	if(_metadata == NULL)
-	{
-		metadata_editor_error("INVALID Handle\n");
-		*value = NULL;
-		return METADATA_EDITOR_ERROR_INVALID_PARAMETER;
-	}
-	if((value == NULL))
-	{
-		metadata_editor_error("INVALID Value Pointer\n");
-		return METADATA_EDITOR_ERROR_INVALID_PARAMETER;
-	}
+	metadata_editor_retvm_if(_metadata == NULL, METADATA_EDITOR_ERROR_INVALID_PARAMETER, "INVALID PARAMETER");
+	metadata_editor_retvm_if(value == NULL, METADATA_EDITOR_ERROR_INVALID_PARAMETER, "INVALID PARAMETER");
+	metadata_editor_retvm_if(_metadata->file == NULL, METADATA_EDITOR_ERROR_INVALID_PARAMETER, "File loading fail.");
 
 	// Check if the file, given through metadata, exists and is opened correctly
-	if(_metadata->file && _metadata->isOpen == false)
-	{
-		metadata_editor_error("File does not exist or you have no rights to open it\n");
-		*value = NULL;
-		return METADATA_EDITOR_ERROR_PERMISSION_DENIED;
-	}
+	*value = NULL;
+	metadata_editor_retvm_if(_metadata->file && _metadata->isOpen == false,METADATA_EDITOR_ERROR_PERMISSION_DENIED,"File does not exist or you have no rights to open it\n");
 
 	TagLib::MP4::File* _file = (TagLib::MP4::File*) _metadata->file;
 	TagLib::MP4::Tag* tag = _file->tag();
-	if(!tag)									// Check if we have a valid tag for processing
-	{
-		metadata_editor_error("Tag does not exist\n");
-		*value = NULL;
-		return METADATA_EDITOR_ERROR_OPERATION_FAILED;
-	}
+	metadata_editor_retvm_if(tag == NULL,METADATA_EDITOR_ERROR_OPERATION_FAILED,"Tag does not exist\n");
 
 	// Get map of items directly from tag and launch a search of specific item
 	TagLib::MP4::ItemListMap& itemMap = tag->itemListMap();
@@ -935,62 +613,33 @@ static int __MP4_getNumberOfPictures(metadata_editor_s* _metadata, char** value)
 	{
 		uint number = it->second.toCoverArtList().size();			// Get the size of CoverList (i.e. number of pictures in file)
 		metadata_editor_info("There are %u picture(s) in file\n", number);
-		int size = 20;
-		char buf[size];
-		snprintf(buf,size, "%u", number);					// Convert integer value of size to its c-string representation
+		char buf[META_MAX_BUF_LEN] = {0, };
+		snprintf(buf,META_MAX_BUF_LEN, "%u", number);					// Convert integer value of size to its c-string representation
 		int length = strlen(buf);
-		if(length == 0)
-		{
-			*value = NULL;
-			metadata_editor_info("Empty string...\n");
-			return METADATA_EDITOR_ERROR_NONE;
-		}
-		*value = new char[length + 1];
-		if(*value == NULL)
-		{
-			metadata_editor_error("OUT_OF_MEMORY\n");
-			return METADATA_EDITOR_ERROR_OUT_OF_MEMORY;
-		}
-		strcpy(*value, buf);
+		metadata_editor_retvm_if(length == 0,METADATA_EDITOR_ERROR_NONE,"Empty string...\n");
+		*value = strndup(buf, length);
 		return METADATA_EDITOR_ERROR_NONE;
 	}
 	else										// Item was not found
 	{
 		metadata_editor_info("No item <covr> in file\n");
-		*value = NULL;
 		return METADATA_EDITOR_ERROR_NONE;
 	}
 }
-
+#if 0
 // *** This function is used to extract string from Xiph Comment field *** //
 static int __xiph_getFieldValue(metadata_editor_s* _metadata, TagLib::Ogg::XiphComment* xtag, const char* fieldname, char** value)
 {
 	// Check if we have a valid argument to work with
-	if((_metadata == NULL) || (fieldname == NULL))
-	{
-		metadata_editor_error("INVALID Parameter\n");
-		*value = NULL;
-		return METADATA_EDITOR_ERROR_INVALID_PARAMETER;
-	}
-	if(value == NULL)
-	{
-		metadata_editor_error("INVALID Value Pointer\n");
-		return METADATA_EDITOR_ERROR_INVALID_PARAMETER;
-	}
+	metadata_editor_retvm_if(_metadata == NULL, METADATA_EDITOR_ERROR_INVALID_PARAMETER, "INVALID PARAMETER");
+	metadata_editor_retvm_if(fieldname == NULL, METADATA_EDITOR_ERROR_INVALID_PARAMETER, "INVALID PARAMETER");
+	metadata_editor_retvm_if(value == NULL, METADATA_EDITOR_ERROR_INVALID_PARAMETER, "INVALID Value Pointer");
 
 	// Check if the file, given through metadata, exists and is opened correctly
-	if(_metadata->file && _metadata->isOpen == false)
-	{
-		metadata_editor_error("File does not exist or you have no rights to open it\n");
-		*value = NULL;
-		return METADATA_EDITOR_ERROR_PERMISSION_DENIED;
-	}
-	if(!xtag)									// Check if we have a valid tag for processing
-	{
-		metadata_editor_error("Tag does not exist\n");
-		*value = NULL;
-		return METADATA_EDITOR_ERROR_OPERATION_FAILED;
-	}
+	*value = NULL;
+	metadata_editor_retvm_if(_metadata->file && _metadata->isOpen == false,METADATA_EDITOR_ERROR_PERMISSION_DENIED,"File does not exist or you have no rights to open it\n");
+	metadata_editor_retvm_if(!xtag,METADATA_EDITOR_ERROR_OPERATION_FAILED,"Tag does not exist\n");
+
 	const TagLib::Ogg::FieldListMap& fieldMap = xtag->fieldListMap();
 	TagLib::Ogg::FieldListMap::ConstIterator it = fieldMap.find(fieldname);
 
@@ -1004,26 +653,13 @@ static int __xiph_getFieldValue(metadata_editor_s* _metadata, TagLib::Ogg::XiphC
 		metadata_editor_info("String is %sUTF\n", (isUTF ? "" : "not "));
 		// Get the length of the string and check if it is empty or not
 		uint length = strlen(str.toCString(isUTF));
-		if(length == 0)
-		{
-			*value = NULL;
-			metadata_editor_info("Empty string...\n");
-			return METADATA_EDITOR_ERROR_NONE;
-		}
-		// Allocate the memory and copy string to output variable
-		*value = new char[length + 1];
-		if(*value == NULL)
-		{
-			metadata_editor_error("OUT_OF_MEMORY\n");
-			return METADATA_EDITOR_ERROR_OUT_OF_MEMORY;
-		}
-		strcpy(*value, str.toCString(isUTF));
+		metadata_editor_retvm_if(length == 0,METADATA_EDITOR_ERROR_NONE,"Empty string...\n");
+		*value = strndup(str.toCString(isUTF), length);
 		return METADATA_EDITOR_ERROR_NONE;
 	}
 	else										// Field was not found
 	{
 		metadata_editor_info("No field %s in Xiph Comment\n", fieldname);
-		*value = NULL;
 		return METADATA_EDITOR_ERROR_NONE;
 	}
 }
@@ -1032,29 +668,15 @@ static int __xiph_getFieldValue(metadata_editor_s* _metadata, TagLib::Ogg::XiphC
 static int __xiph_updateFieldValue(metadata_editor_s* _metadata, TagLib::Ogg::XiphComment* xtag, const char* fieldname, const char* value)
 {
 	// Check if we have a valid argument to work with
-	if((_metadata == NULL) || (fieldname == NULL))
-	{
-		metadata_editor_error("INVALID Parameter\n");
-		return METADATA_EDITOR_ERROR_INVALID_PARAMETER;
-	}
+	metadata_editor_retvm_if(_metadata == NULL, METADATA_EDITOR_ERROR_INVALID_PARAMETER, "INVALID PARAMETER");
+	metadata_editor_retvm_if(fieldname == NULL, METADATA_EDITOR_ERROR_INVALID_PARAMETER, "INVALID PARAMETER");
 
 	// Check if the file, given through metadata, exists and is opened correctly
-	if(_metadata->file && _metadata->isOpen == false)
-	{
-		metadata_editor_error("File does not exist or you have no rights to open it\n");
-		return METADATA_EDITOR_ERROR_PERMISSION_DENIED;
-	}
-	if(_metadata->isReadOnly)							// Check if the file is writable or it is readonly
-	{
-		metadata_editor_error("File is readonly. Unable to modify\n");
-		return METADATA_EDITOR_ERROR_OPERATION_FAILED;
-	}
+	*value = NULL;
+	metadata_editor_retvm_if(_metadata->file && _metadata->isOpen == false,METADATA_EDITOR_ERROR_PERMISSION_DENIED,"File does not exist or you have no rights to open it\n");
+	metadata_editor_retvm_if(_metadata->isReadOnly, METADATA_EDITOR_ERROR_OPERATION_FAILED, "File is readonly. Unable to modify\n");
+	metadata_editor_retvm_if(!xtag,METADATA_EDITOR_ERROR_OPERATION_FAILED,"Tag does not exist\n");
 
-	if(!xtag)									// Check if we have a valid tag for processing
-	{
-		metadata_editor_error("Tag does not exist\n");
-		return METADATA_EDITOR_ERROR_OPERATION_FAILED;
-	}
 	// Check if it is a request for deletion
 	if((value == NULL) || value[0] == '\0')
 	{
@@ -1072,62 +694,38 @@ static int __xiph_updateFieldValue(metadata_editor_s* _metadata, TagLib::Ogg::Xi
 static int __FLAC_getNumberOfPictures(metadata_editor_s* _metadata, char** value)
 {
 	// Check if parameters are valid
-	if(_metadata == NULL)
-	{
-		metadata_editor_error("INVALID Handle\n");
-		*value = NULL;
-		return METADATA_EDITOR_ERROR_INVALID_PARAMETER;
-	}
-	if(value == NULL)
-	{
-		metadata_editor_error("INVALID Value Pointer\n");
-		return METADATA_EDITOR_ERROR_INVALID_PARAMETER;
-	}
+	metadata_editor_retvm_if(_metadata == NULL, METADATA_EDITOR_ERROR_INVALID_PARAMETER, "INVALID Handle");
+	metadata_editor_retvm_if(value == NULL, METADATA_EDITOR_ERROR_INVALID_PARAMETER, "INVALID Value Pointer");
+	metadata_editor_retvm_if(_metadata->file == NULL, METADATA_EDITOR_ERROR_INVALID_PARAMETER, "File loading fail");
 
 	// Check if the file, given through metadata, exists and is opened correctly
-	if(_metadata->file && _metadata->isOpen == false)
-	{
-		metadata_editor_error("File does not exist or you have no rights to open it\n");
-		*value = NULL;
-		return METADATA_EDITOR_ERROR_PERMISSION_DENIED;
-	}
+	*value = NULL;
+	metadata_editor_retvm_if(_metadata->file && _metadata->isOpen == false,METADATA_EDITOR_ERROR_PERMISSION_DENIED,"File does not exist or you have no rights to open it\n");
 
 	TagLib::FLAC::File* _file = (TagLib::FLAC::File*) _metadata->file;
 	if(_file->pictureList().isEmpty())
 	{
 		metadata_editor_info("No pictures in FLAC file\n");
-		*value = NULL;
 		return METADATA_EDITOR_ERROR_NONE;
 	}
 	uint number = _file->pictureList().size();
 	metadata_editor_info("There are %u picture(s) in file\n", number);
-	int size = 20;
-	char buf[size];
-	snprintf(buf,size, "%u", number);						// Convert integer value of size to its c-string representation
-	int length = strlen(buf);
-	if(length == 0)
-	{
-		*value = NULL;
-		metadata_editor_info("Empty string...\n");
-		return METADATA_EDITOR_ERROR_NONE;
-	}
-	*value = new char[length + 1];
-	if(*value == NULL)
-	{
-		metadata_editor_error("OUT_OF_MEMORY\n");
-		return METADATA_EDITOR_ERROR_OUT_OF_MEMORY;
-	}
-	strcpy(*value, buf);
+	char buf[META_MAX_BUF_LEN] = {0, };
+	snprintf(buf,META_MAX_BUF_LEN, "%u", number);						// Convert integer value of size to its c-string representation
+	uint length = strlen(buf);
+	metadata_editor_retvm_if(length == 0,METADATA_EDITOR_ERROR_NONE,"Empty string...\n");
+	*value = strndup(buf, length);
 	return METADATA_EDITOR_ERROR_NONE;
 }
-
+#endif
 int __metadata_editor_get_file_ext(const char *file_path, char *file_ext, int max_len)
 {
 	int i = 0;
+	unsigned int path_len = strlen(file_path);
 
-	for (i = strlen(file_path); i >= 0; i--)
+	for (i = (int)path_len; i >= 0; i--)
 	{
-		if ((file_path[i] == '.') && (i < strlen(file_path)))
+		if ((file_path[i] == '.') && (i < (int)path_len))
 		{
 			strncpy(file_ext, &file_path[i + 1], max_len);
 			return 0;
@@ -1156,11 +754,7 @@ int __metadata_editor_get_file_type(const char *path)
 
 		char ext[255] = { 0 };
 		int ret = __metadata_editor_get_file_ext(path, ext, sizeof(ext));
-		if (ret < 0)
-		{
-			metadata_editor_error("__metadata_editor_get_file_type failed");
-			return METADATA_EDITOR_FORMAT_NOTYPE;
-		}
+		metadata_editor_retvm_if(ret < 0,METADATA_EDITOR_FORMAT_NOTYPE,"__metadata_editor_get_file_type failed");
 
 		if (strcasecmp(ext, "MP3") == 0)
 		{
@@ -1206,11 +800,7 @@ int __metadata_editor_get_picture_type(const char *path, char **type)
 
 		char ext[255] = { 0 };
 		int ret = __metadata_editor_get_file_ext(path, ext, sizeof(ext));
-		if (ret < 0)
-		{
-			metadata_editor_error("__metadata_editor_get_file_type failed");
-			return METADATA_EDITOR_ERROR_OPERATION_FAILED;
-		}
+		metadata_editor_retvm_if(ret < 0,METADATA_EDITOR_ERROR_OPERATION_FAILED,"__metadata_editor_get_file_type failed");
 
 		if (strcasecmp(ext, "JPG") == 0 || strcasecmp(ext, "JPEG") == 0)
 		{
@@ -1264,15 +854,19 @@ int __metadata_editor_get_picture_info(const char *path, void **picture, int *si
 			file_size++;
 		}
 		fclose(fin);
-		char picture_buffer[file_size];
+		char picture_buffer[file_size] = {0,};
+		memset(picture_buffer, 0, file_size * sizeof(char));
 		fin = fopen(path, "rb");
-		ret = fread(picture_buffer, file_size, 1, fin);
-		fclose(fin);
-
-		*picture = malloc(file_size * sizeof(char));
-		memset(*picture, 0, file_size * sizeof(char));
-		memcpy(*picture, picture_buffer, file_size);
-		*size = file_size;
+		if(fin) {
+			ret = fread(picture_buffer, file_size, 1, fin);
+			fclose(fin);
+		}
+		if(*picture == NULL) {
+			*picture = malloc(file_size * sizeof(char));
+			memset(*picture, 0, file_size * sizeof(char));
+			memcpy(*picture, picture_buffer, file_size);
+			*size = file_size;
+		}
 	}
 
 	return METADATA_EDITOR_ERROR_NONE;
@@ -1289,18 +883,10 @@ bool __metadata_editor_file_exist(const std::string& name) {
 extern "C" int metadata_editor_create(metadata_editor_h *metadata)
 {
 	// Check if we have a valid argument to work with
-	if(metadata == NULL)
-	{
-		metadata_editor_error("INVALID PARAMETER\n");
-		return METADATA_EDITOR_ERROR_INVALID_PARAMETER;
-	}
+	metadata_editor_retvm_if(metadata == NULL, METADATA_EDITOR_ERROR_INVALID_PARAMETER, "INVALID PARAMETER");
 
 	metadata_editor_s *_metadata = new metadata_editor_s;		// Allocate a structure for handler
-	if(_metadata == NULL)						// Check if the structure was allocated successfully
-	{
-		metadata_editor_error("OUT_OF_MEMORY\n");
-		return METADATA_EDITOR_ERROR_OUT_OF_MEMORY;
-	}
+	metadata_editor_retvm_if(_metadata == NULL,METADATA_EDITOR_ERROR_OUT_OF_MEMORY,"OUT_OF_MEMORY");
 
 	_metadata->file = NULL;
 	_metadata->filetype = METADATA_EDITOR_FORMAT_NOTYPE;			// Specify file type out of range
@@ -1317,16 +903,8 @@ extern "C" int metadata_editor_create(metadata_editor_h *metadata)
 extern "C" int metadata_editor_set_path(metadata_editor_h metadata, const char *path)
 {
 	// Check if we have valid arguments to work with
-	if(metadata == NULL)
-	{
-		metadata_editor_error("INVALID Handle\n");
-		return METADATA_EDITOR_ERROR_INVALID_PARAMETER;
-	}
-	if(path == NULL)
-	{
-		metadata_editor_error("INVALID Path\n");
-		return METADATA_EDITOR_ERROR_INVALID_PARAMETER;
-	}
+	metadata_editor_retvm_if(metadata == NULL, METADATA_EDITOR_ERROR_INVALID_PARAMETER, "INVALID Handle");
+	metadata_editor_retvm_if(path == NULL, METADATA_EDITOR_ERROR_INVALID_PARAMETER, "INVALID Handle");
 
 	if(!__metadata_editor_file_exist(path))
 	{
@@ -1335,11 +913,9 @@ extern "C" int metadata_editor_set_path(metadata_editor_h metadata, const char *
 	}
 
 	metadata_editor_s *_metadata = (metadata_editor_s*)metadata;
-	int media_type;
+	int media_type = METADATA_EDITOR_FORMAT_NOTYPE;
 
 	media_type = __metadata_editor_get_file_type(path);
-
-
 
 	switch(media_type)							// Parse file according the specified type
 	{
@@ -1348,11 +924,8 @@ extern "C" int metadata_editor_set_path(metadata_editor_h metadata, const char *
 			// Allocate the file object in memory to work with it later on
 			TagLib::MPEG::File* _file = new TagLib::MPEG::File(path);
 
-			if(_file == NULL)					// Check if the file was allocated successfully
-			{
-				metadata_editor_error("OUT_OF_MEMORY\n");
-				return METADATA_EDITOR_ERROR_OUT_OF_MEMORY;
-			}
+			metadata_editor_retvm_if(_file == NULL, METADATA_EDITOR_ERROR_OUT_OF_MEMORY, "OUT_OF_MEMORY");
+
 			_metadata->file = _file;				// Copy file pointer to the structure
 
 			_metadata->filetype = METADATA_EDITOR_FORMAT_MP3;
@@ -1385,11 +958,8 @@ extern "C" int metadata_editor_set_path(metadata_editor_h metadata, const char *
 			// Allocate the file object in memory to work with it later on
 			TagLib::MP4::File* _file = new TagLib::MP4::File(path);
 
-			if(_file == NULL)					// Check if the file was allocated successfully
-			{
-				metadata_editor_error("OUT_OF_MEMORY\n");
-				return METADATA_EDITOR_ERROR_OUT_OF_MEMORY;
-			}
+			metadata_editor_retvm_if(_file == NULL, METADATA_EDITOR_ERROR_OUT_OF_MEMORY, "OUT_OF_MEMORY");
+
 			_metadata->file = _file;				// Copy file pointer to the structure
 
 			_metadata->filetype = METADATA_EDITOR_FORMAT_MP4;
@@ -1423,11 +993,8 @@ extern "C" int metadata_editor_set_path(metadata_editor_h metadata, const char *
 			// Allocate the file object in memory to work with it later on
 			TagLib::FLAC::File* _file = new TagLib::FLAC::File(path);
 
-			if(_file == NULL)					// Check if the file was allocated successfully
-			{
-				metadata_editor_error("OUT_OF_MEMORY\n");
-				return METADATA_EDITOR_ERROR_OUT_OF_MEMORY;
-			}
+			metadata_editor_retvm_if(_file == NULL, METADATA_EDITOR_ERROR_OUT_OF_MEMORY, "OUT_OF_MEMORY");
+
 			_metadata->file = _file;				// Copy file pointer to the structure
 
 			_metadata->filetype = METADATA_EDITOR_FORMAT_FLAC;
@@ -1460,11 +1027,8 @@ extern "C" int metadata_editor_set_path(metadata_editor_h metadata, const char *
 			// Allocate the file object in memory to work with it later on
 			TagLib::Ogg::Vorbis::File* _file = new TagLib::Ogg::Vorbis::File(path);
 
-			if(_file == NULL)					// Check if the file was allocated successfully
-			{
-				metadata_editor_error("OUT_OF_MEMORY\n");
-				return METADATA_EDITOR_ERROR_OUT_OF_MEMORY;
-			}
+			metadata_editor_retvm_if(_file == NULL, METADATA_EDITOR_ERROR_OUT_OF_MEMORY, "OUT_OF_MEMORY");
+
 			_metadata->file = _file;				// Copy file pointer to the structure
 
 			_metadata->filetype = METADATA_EDITOR_FORMAT_OGG_VORBIS;
@@ -1497,11 +1061,8 @@ extern "C" int metadata_editor_set_path(metadata_editor_h metadata, const char *
 			// Allocate the file object in memory to work with it later on
 			TagLib::Ogg::FLAC::File* _file = new TagLib::Ogg::FLAC::File(path);
 
-			if(_file == NULL)					// Check if the file was allocated successfully
-			{
-				metadata_editor_error("OUT_OF_MEMORY\n");
-				return METADATA_EDITOR_ERROR_OUT_OF_MEMORY;
-			}
+			metadata_editor_retvm_if(_file == NULL, METADATA_EDITOR_ERROR_OUT_OF_MEMORY, "OUT_OF_MEMORY");
+
 			_metadata->file = _file;				// Copy file pointer to the structure
 
 			_metadata->filetype = METADATA_EDITOR_FORMAT_OGG_FLAC;
@@ -1534,11 +1095,8 @@ extern "C" int metadata_editor_set_path(metadata_editor_h metadata, const char *
 			// Allocate the file object in memory to work with it later on
 			TagLib::RIFF::WAV::File* _file = new TagLib::RIFF::WAV::File(path);
 
-			if(_file == NULL)					// Check if the file was allocated successfully
-			{
-				metadata_editor_error("OUT_OF_MEMORY\n");
-				return METADATA_EDITOR_ERROR_OUT_OF_MEMORY;
-			}
+			metadata_editor_retvm_if(_file == NULL, METADATA_EDITOR_ERROR_OUT_OF_MEMORY, "OUT_OF_MEMORY");
+
 			_metadata->file = _file;				// Copy file pointer to the structure
 
 			_metadata->filetype = METADATA_EDITOR_FORMAT_WAV;
@@ -1577,27 +1135,15 @@ extern "C" int metadata_editor_set_path(metadata_editor_h metadata, const char *
 extern "C" int metadata_editor_get_metadata(metadata_editor_h metadata, metadata_editor_attr_e attribute, char **value)
 {
 	// Check if we have valid arguments to work with
-	if(metadata == NULL)
-	{
-		metadata_editor_error("INVALID Handle\n");
-		*value = NULL;
-		return METADATA_EDITOR_ERROR_INVALID_PARAMETER;
-	}
-	if(value == NULL)
-	{
-		metadata_editor_error("INVALID Value Pointer\n");
-		return METADATA_EDITOR_ERROR_INVALID_PARAMETER;
-	}
+	metadata_editor_retvm_if(metadata == NULL, METADATA_EDITOR_ERROR_INVALID_PARAMETER, "INVALID Handle");
+	metadata_editor_retvm_if(value == NULL, METADATA_EDITOR_ERROR_INVALID_PARAMETER, "INVALID Value Pointer");
 
 	metadata_editor_s *_metadata = (metadata_editor_s*)metadata;
+	metadata_editor_retvm_if(_metadata->file == NULL, METADATA_EDITOR_ERROR_INVALID_PARAMETER, "File loading fail.\n");
 
 	// Check if the file, given through metadata, exists and is opened correctly
-	if(_metadata->file && _metadata->isOpen == false)
-	{
-		metadata_editor_error("File does not exist or you have no rights to open it\n");
-		*value = NULL;
-		return METADATA_EDITOR_ERROR_PERMISSION_DENIED;
-	}
+	*value = NULL;
+	metadata_editor_retvm_if(_metadata->file && _metadata->isOpen == false,METADATA_EDITOR_ERROR_PERMISSION_DENIED,"File does not exist or you have no rights to open it\n");
 
 	switch(_metadata->filetype)				// Process the file according to the specified file type
 	{
@@ -1624,7 +1170,6 @@ extern "C" int metadata_editor_get_metadata(metadata_editor_h metadata, metadata
 				case METADATA_EDITOR_ATTR_PICTURE_NUM:			return __ID3_getNumberOfPictures(_metadata, tag2, value);
 				case METADATA_EDITOR_ATTR_UNSYNCLYRICS:              	return __ID3_getLyricsFrame(_metadata, tag2, value);
 				default:
-					*value = NULL;
 					return METADATA_EDITOR_ERROR_INVALID_PARAMETER;
 			}
 		}
@@ -1646,7 +1191,6 @@ extern "C" int metadata_editor_get_metadata(metadata_editor_h metadata, metadata
 				case METADATA_EDITOR_ATTR_UNSYNCLYRICS:			return __MP4_getStringItem(_metadata, "\xA9""lyr", value);
 				case METADATA_EDITOR_ATTR_PICTURE_NUM:			return __MP4_getNumberOfPictures(_metadata, value);
 				default:
-					*value = NULL;
 					return METADATA_EDITOR_ERROR_INVALID_PARAMETER;
 			}
 		}
@@ -1678,7 +1222,6 @@ extern "C" int metadata_editor_get_metadata(metadata_editor_h metadata, metadata
 				case METADATA_EDITOR_ATTR_UNSYNCLYRICS:			return __xiph_getFieldValue(_metadata, xtag, "LYRICS", value);
 				case METADATA_EDITOR_ATTR_PICTURE_NUM:			return __FLAC_getNumberOfPictures(_metadata, value);
 				default:
-					*value = NULL;
 					return METADATA_EDITOR_ERROR_INVALID_PARAMETER;
 			}
 		}
@@ -1708,7 +1251,6 @@ extern "C" int metadata_editor_get_metadata(metadata_editor_h metadata, metadata
 				case METADATA_EDITOR_ATTR_CONDUCTOR:			return __xiph_getFieldValue(_metadata, xtag, "CONDUCTOR", value);
 				case METADATA_EDITOR_ATTR_UNSYNCLYRICS:			return __xiph_getFieldValue(_metadata, xtag, "LYRICS", value);
 				default:
-					*value = NULL;
 					return METADATA_EDITOR_ERROR_INVALID_PARAMETER;
 			}
 		}
@@ -1738,7 +1280,6 @@ extern "C" int metadata_editor_get_metadata(metadata_editor_h metadata, metadata
 				case METADATA_EDITOR_ATTR_CONDUCTOR:			return __xiph_getFieldValue(_metadata, xtag, "CONDUCTOR", value);
 				case METADATA_EDITOR_ATTR_UNSYNCLYRICS:			return __xiph_getFieldValue(_metadata, xtag, "LYRICS", value);
 				default:
-					*value = NULL;
 					return METADATA_EDITOR_ERROR_INVALID_PARAMETER;
 			}
 		}
@@ -1771,14 +1312,12 @@ extern "C" int metadata_editor_get_metadata(metadata_editor_h metadata, metadata
 				case METADATA_EDITOR_ATTR_PICTURE_NUM:			return __ID3_getNumberOfPictures(_metadata, tag2, value);
 				case METADATA_EDITOR_ATTR_UNSYNCLYRICS:              	return __ID3_getLyricsFrame(_metadata, tag2, value);
 				default:
-					*value = NULL;
 					return METADATA_EDITOR_ERROR_INVALID_PARAMETER;
 			}
 		}
 #endif
 		default:
 			metadata_editor_error("Wrong file type\n");
-			*value = NULL;
 			return METADATA_EDITOR_ERROR_INVALID_PARAMETER;
 	}
 }
@@ -1787,25 +1326,15 @@ extern "C" int metadata_editor_get_metadata(metadata_editor_h metadata, metadata
 extern "C" int metadata_editor_set_metadata(metadata_editor_h metadata, metadata_editor_attr_e attribute, const char* value)
 {
 	// Check if we have valid arguments to work with
-	if(metadata == NULL)
-	{
-		metadata_editor_error("INVALID Handle\n");
-		return METADATA_EDITOR_ERROR_INVALID_PARAMETER;
-	}
+	metadata_editor_retvm_if(metadata == NULL, METADATA_EDITOR_ERROR_INVALID_PARAMETER, "INVALID Handle");
 
 	metadata_editor_s* _metadata = (metadata_editor_s*) metadata;
 
+	metadata_editor_retvm_if(_metadata->file == NULL, METADATA_EDITOR_ERROR_INVALID_PARAMETER, "File loading fail.\n");
+
 	// Check if the file, given through metadata, exists and is opened correctly
-	if(_metadata->file && _metadata->isOpen == false)
-	{
-		metadata_editor_error("File does not exist or you have no rights to open it\n");
-		return METADATA_EDITOR_ERROR_PERMISSION_DENIED;
-	}
-	if(_metadata->isReadOnly)						// Check if the file is writable or it is readonly
-	{
-		metadata_editor_error("File is readonly. Unable to modify\n");
-		return METADATA_EDITOR_ERROR_OPERATION_FAILED;
-	}
+	metadata_editor_retvm_if(_metadata->file && _metadata->isOpen == false,METADATA_EDITOR_ERROR_PERMISSION_DENIED,"File does not exist or you have no rights to open it\n");
+	metadata_editor_retvm_if(_metadata->isReadOnly, METADATA_EDITOR_ERROR_OPERATION_FAILED, "File is readonly. Unable to modify\n");
 
 	switch(_metadata->filetype)						// Process the file according to the specified file type
 	{
@@ -1816,11 +1345,7 @@ extern "C" int metadata_editor_set_metadata(metadata_editor_h metadata, metadata
 			TagLib::ID3v1::Tag* tag1 = _file->ID3v1Tag();
 			TagLib::ID3v2::Tag* tag2 = _file->ID3v2Tag(true);
 
-			if(tag2 == NULL)					// Check if the valid tag pointer exist
-			{
-				metadata_editor_error("Error. ID3v2 tag was not created. Can not proceed metadata updating\n");
-				return METADATA_EDITOR_ERROR_OPERATION_FAILED;
-			}
+			metadata_editor_retvm_if(tag2 == NULL,METADATA_EDITOR_ERROR_OPERATION_FAILED,"Error. ID3v2 tag was not created. Can not proceed metadata updating");
 
 			switch (attribute)					// Check which one of frame type was given for processing
 			{
@@ -1986,25 +1511,14 @@ extern "C" int metadata_editor_set_metadata(metadata_editor_h metadata, metadata
 extern "C" int metadata_editor_update_metadata(metadata_editor_h metadata)
 {
 	// Check if we have a valid argument to work with
-	if(metadata == NULL)
-	{
-		metadata_editor_error("INVALID Handle\n");
-		return METADATA_EDITOR_ERROR_INVALID_PARAMETER;
-	}
+	metadata_editor_retvm_if(metadata == NULL, METADATA_EDITOR_ERROR_INVALID_PARAMETER, "INVALID Handle\n");
 
 	metadata_editor_s *_metadata = (metadata_editor_s*)metadata;
+	metadata_editor_retvm_if(_metadata->file == NULL, METADATA_EDITOR_ERROR_INVALID_PARAMETER, "File loading fail.\n");
 
 	// Check if the file, given through metadata, exists and is opened correctly
-	if(_metadata->file && _metadata->isOpen == false)
-	{
-		metadata_editor_error("File does not exist or you have no rights to open it\n");
-		return METADATA_EDITOR_ERROR_PERMISSION_DENIED;
-	}
-	if(_metadata->isReadOnly)						// Check if the file is writable or it is readonly
-	{
-		metadata_editor_error("File is readonly. Unable to modify\n");
-		return METADATA_EDITOR_ERROR_PERMISSION_DENIED;
-	}
+	metadata_editor_retvm_if(_metadata->file && _metadata->isOpen == false,METADATA_EDITOR_ERROR_PERMISSION_DENIED,"File does not exist or you have no rights to open it\n");
+	metadata_editor_retvm_if(_metadata->isReadOnly, METADATA_EDITOR_ERROR_OPERATION_FAILED, "File is readonly. Unable to modify\n");
 
 	switch(_metadata->filetype)						// Process the file according to the specified file type
 	{
@@ -2084,24 +1598,19 @@ extern "C" int metadata_editor_get_picture(metadata_editor_h metadata, int index
 	const char *TYPE_JPEG = "image/jpeg";
 	const char *TYPE_PNG = "image/png";
 	// Check if we have valid arguments to work with
-	if(metadata == NULL)
-	{
-		metadata_editor_error("INVALID Handle\n");
-		*picture = NULL; *size = 0; *mime_type = NULL;
-		return METADATA_EDITOR_ERROR_INVALID_PARAMETER;
-	}
-	if((picture == NULL) || (size == NULL))
-		return METADATA_EDITOR_ERROR_INVALID_PARAMETER;
+	metadata_editor_retvm_if(metadata == NULL, METADATA_EDITOR_ERROR_INVALID_PARAMETER, "INVALID Handle\n");
+	metadata_editor_retvm_if(picture == NULL, METADATA_EDITOR_ERROR_INVALID_PARAMETER, "INVALID PARAMETER");
+	metadata_editor_retvm_if(size == NULL, METADATA_EDITOR_ERROR_INVALID_PARAMETER, "INVALID PARAMETER");
 
 	metadata_editor_s* _metadata = (metadata_editor_s*) metadata;
+	metadata_editor_retvm_if(_metadata->file == NULL, METADATA_EDITOR_ERROR_INVALID_PARAMETER, "File loading fail.\n");
 
 	// Check if the file, given through metadata, exists and is opened correctly
-	if(_metadata->file && _metadata->isOpen == false)
-	{
-		metadata_editor_error("File does not exist or you have no rights to open it\n");
-		*picture = NULL; *size = 0; *mime_type = NULL;
-		return METADATA_EDITOR_ERROR_PERMISSION_DENIED;
-	}
+	*picture = NULL;
+	*size = 0;
+	*mime_type = NULL;
+
+	metadata_editor_retvm_if(_metadata->file && _metadata->isOpen == false,METADATA_EDITOR_ERROR_PERMISSION_DENIED,"File does not exist or you have no rights to open it\n");
 
 	switch(_metadata->filetype)									// Process the file according to the specified file type
 	{
@@ -2109,18 +1618,13 @@ extern "C" int metadata_editor_get_picture(metadata_editor_h metadata, int index
 		{
 			TagLib::MPEG::File* _file = (TagLib::MPEG::File*)_metadata->file;		// Bring the pointer to actual file type
 			TagLib::ID3v2::Tag* tag2 = _file->ID3v2Tag();
-			if(!tag2)
-			{
-				metadata_editor_error("No ID3v2 tag in file\n");
-				*picture = NULL; *size = 0; *mime_type = NULL;
-				return METADATA_EDITOR_ERROR_OPERATION_FAILED;
-			}
+			metadata_editor_retvm_if(tag2 == NULL,METADATA_EDITOR_ERROR_OPERATION_FAILED,"Error. No ID3v2 tag in file.");
+
 			TagLib::ID3v2::FrameList lst = tag2->frameListMap()["APIC"];
 			// Check if there are pictures in the tag
 			if(lst.isEmpty())
 			{
 				metadata_editor_error("No pictures in file\n");
-				*picture = NULL; *size = 0; *mime_type = NULL;
 				return METADATA_EDITOR_ERROR_OPERATION_FAILED;
 			}
 			else                // pictures exist in file
@@ -2129,7 +1633,6 @@ extern "C" int metadata_editor_get_picture(metadata_editor_h metadata, int index
 				if( (index < 0) || (lst.size() <= (uint)index) )
 				{
 					metadata_editor_error("Index of picture is out of range\n");
-					*picture = NULL; *size = 0; *mime_type = NULL;
 					return METADATA_EDITOR_ERROR_INVALID_PARAMETER;
 				}
 				else            // everything is correct - begin extraction
@@ -2142,18 +1645,10 @@ extern "C" int metadata_editor_get_picture(metadata_editor_h metadata, int index
 						if(i != index) continue;
 						TagLib::ID3v2::AttachedPictureFrame* pictureFrame = static_cast<TagLib::ID3v2::AttachedPictureFrame*>(*it);
 						uint pictureSize = pictureFrame->picture().size();
-						if(pictureSize == 0)
-						{
-							*picture = NULL; *size = 0; *mime_type = NULL;
-							metadata_editor_error("Size of picture is 0\n");
-							return METADATA_EDITOR_ERROR_OPERATION_FAILED;
-						}
-						*picture = new char[pictureSize];
-						if(*picture == NULL)
-						{
-							metadata_editor_error("OUT_OF_MEMORY\n");
-							return METADATA_EDITOR_ERROR_OUT_OF_MEMORY;
-						}
+						metadata_editor_retvm_if(pictureSize == 0,METADATA_EDITOR_ERROR_OPERATION_FAILED,"Size of picture is 0");
+						META_MALLOC(*picture, pictureSize);
+						metadata_editor_retvm_if(*picture == NULL, METADATA_EDITOR_ERROR_OUT_OF_MEMORY, "OUT_OF_MEMORY");
+
 						memcpy(*picture, pictureFrame->picture().data(), pictureSize);
 						*size = pictureSize;
 						TagLib::String mime = pictureFrame->mimeType();
@@ -2173,12 +1668,7 @@ extern "C" int metadata_editor_get_picture(metadata_editor_h metadata, int index
 		{
 			TagLib::MP4::File* _file = (TagLib::MP4::File*) _metadata->file;
 			TagLib::MP4::Tag* tag = _file->tag();
-			if(!tag)									// Check if we have a valid tag for processing
-			{
-				metadata_editor_error("Tag does not exist\n");
-				*picture = NULL; *size = 0; *mime_type = NULL;
-				return METADATA_EDITOR_ERROR_OPERATION_FAILED;
-			}
+			metadata_editor_retvm_if(tag == NULL,METADATA_EDITOR_ERROR_OPERATION_FAILED,"Tag does not exist\n");
 
 			// Get map of items directly from tag and launch a search of specific item
 			TagLib::MP4::ItemListMap& itemMap = tag->itemListMap();
@@ -2190,7 +1680,6 @@ extern "C" int metadata_editor_get_picture(metadata_editor_h metadata, int index
 				if((index < 0) || ((uint)index >= lst.size()))				// it is not
 				{
 					metadata_editor_error("Index of picture is out of range\n");
-					*picture = NULL; *size = 0; *mime_type = NULL;
 					return METADATA_EDITOR_ERROR_INVALID_PARAMETER;
 				}
 				else									// index is in range
@@ -2200,18 +1689,10 @@ extern "C" int metadata_editor_get_picture(metadata_editor_h metadata, int index
 					{
 						if(i != index) continue;
 						int pictureSize = picIt->data().size();
-						if(pictureSize == 0)
-						{
-							*picture = NULL; *size = 0; *mime_type = NULL;
-							metadata_editor_error("Size of picture is 0\n");
-							return METADATA_EDITOR_ERROR_OPERATION_FAILED;
-						}
-						*picture = new char[pictureSize];
-						if(*picture == NULL)
-						{
-							metadata_editor_error("OUT_OF_MEMORY\n");
-							return METADATA_EDITOR_ERROR_OUT_OF_MEMORY;
-						}
+						metadata_editor_retvm_if(pictureSize == 0,METADATA_EDITOR_ERROR_OPERATION_FAILED,"Size of picture is 0");
+						META_MALLOC(*picture, pictureSize);
+						metadata_editor_retvm_if(*picture == NULL, METADATA_EDITOR_ERROR_OUT_OF_MEMORY, "OUT_OF_MEMORY");
+
 						memcpy(*picture, picIt->data().data(), pictureSize);
 						*size = pictureSize;
 						if(picIt->format() == TagLib::MP4::CoverArt::JPEG)	*mime_type = strndup(TYPE_JPEG, strlen(TYPE_JPEG));
@@ -2225,7 +1706,6 @@ extern "C" int metadata_editor_get_picture(metadata_editor_h metadata, int index
 			else										// Item was not found - no pictures in file
 			{
 				metadata_editor_error("No item <covr> in file. No pictures in file\n");
-				*picture = NULL; *size = 0; *mime_type = NULL;
 				return METADATA_EDITOR_ERROR_OPERATION_FAILED;
 			}
 		}
@@ -2237,7 +1717,6 @@ extern "C" int metadata_editor_get_picture(metadata_editor_h metadata, int index
 			if(lst.isEmpty())
 			{
 				metadata_editor_error("No pictures in FLAC file\n");
-				*picture = NULL; *size = 0; *mime_type = NULL;
 				return METADATA_EDITOR_ERROR_OPERATION_FAILED;
 			}
 			else
@@ -2246,7 +1725,6 @@ extern "C" int metadata_editor_get_picture(metadata_editor_h metadata, int index
 				if((index < 0) || ((uint)index >= lst.size()))			// it is not
 				{
 					metadata_editor_error("Index of picture is out of range\n");
-					*picture = NULL; *size = 0; *mime_type = NULL;
 					return METADATA_EDITOR_ERROR_INVALID_PARAMETER;
 				}
 				else													// index is in range
@@ -2259,18 +1737,10 @@ extern "C" int metadata_editor_get_picture(metadata_editor_h metadata, int index
 						// picture can be received as ByteVector (picIt->data()).
 						// ByteVector has data() - picture itself and size() - the size of picture in data() method
 						int pictureSize = (*picIt)->data().size();
-						if(pictureSize == 0)
-						{
-							*picture = NULL; *size = 0; *mime_type = NULL;
-							metadata_editor_error("Size of picture is 0\n");
-							return METADATA_EDITOR_ERROR_OPERATION_FAILED;
-						}
-						*picture = new char[pictureSize];
-						if(*picture == NULL)
-						{
-							metadata_editor_error("OUT_OF_MEMORY\n");
-							return METADATA_EDITOR_ERROR_OUT_OF_MEMORY;
-						}
+						metadata_editor_retvm_if(pictureSize == 0,METADATA_EDITOR_ERROR_OPERATION_FAILED,"Size of picture is 0");
+						META_MALLOC(*picture, pictureSize);
+						metadata_editor_retvm_if(*picture == NULL, METADATA_EDITOR_ERROR_OUT_OF_MEMORY, "OUT_OF_MEMORY");
+
 						memcpy(*picture, (*picIt)->data().data(), pictureSize);
 						*size = pictureSize;
 						TagLib::String mime = (*picIt)->mimeType();
@@ -2293,7 +1763,6 @@ extern "C" int metadata_editor_get_picture(metadata_editor_h metadata, int index
 			if(!tag2)
 			{
 				metadata_editor_error("No ID3v2 tag in file\n");
-				*picture = NULL; *size = 0; *mime_type = NULL;
 				return METADATA_EDITOR_ERROR_OPERATION_FAILED;
 			}
 			TagLib::ID3v2::FrameList lst = tag2->frameListMap()["APIC"];
@@ -2301,7 +1770,6 @@ extern "C" int metadata_editor_get_picture(metadata_editor_h metadata, int index
 			if(lst.isEmpty())
 			{
 				metadata_editor_error("No pictures in file\n");
-				*picture = NULL; *size = 0; *mime_type = NULL;
 				return METADATA_EDITOR_ERROR_OPERATION_FAILED;
 			}
 			else						// pictures exist in file
@@ -2310,7 +1778,6 @@ extern "C" int metadata_editor_get_picture(metadata_editor_h metadata, int index
 				if( (index < 0) || (lst.size() <= (uint)index) )
 				{
 					metadata_editor_error("Index of picture is out of range\n");
-					*picture = NULL; *size = 0; *mime_type = NULL;
 					return METADATA_EDITOR_ERROR_INVALID_PARAMETER;
 				}
 				else					// everything is correct - begin extraction
@@ -2323,18 +1790,11 @@ extern "C" int metadata_editor_get_picture(metadata_editor_h metadata, int index
 						if(i != index) continue;
 						TagLib::ID3v2::AttachedPictureFrame* pictureFrame = static_cast<TagLib::ID3v2::AttachedPictureFrame*>(*it);
 						uint pictureSize = pictureFrame->picture().size();
-						if(pictureSize == 0)
-						{
-							*picture = NULL; *size = 0; *mime_type = NULL;
-							metadata_editor_error("Size of picture is 0\n");
-							return METADATA_EDITOR_ERROR_OPERATION_FAILED;
-						}
-						*picture = new char[pictureSize];
-						if(*picture == NULL)
-						{
-							metadata_editor_error("OUT_OF_MEMORY\n");
-							return METADATA_EDITOR_ERROR_OUT_OF_MEMORY;
-						}
+						metadata_editor_retvm_if(pictureSize == 0,METADATA_EDITOR_ERROR_OPERATION_FAILED,"Size of picture is 0");
+
+						META_MALLOC(*picture, pictureSize);
+						metadata_editor_retvm_if(*picture == NULL, METADATA_EDITOR_ERROR_OUT_OF_MEMORY, "OUT_OF_MEMORY");
+
 						memcpy(*picture, pictureFrame->picture().data(), pictureSize);
 						*size = pictureSize;
 						TagLib::String mime = pictureFrame->mimeType();
@@ -2353,7 +1813,6 @@ extern "C" int metadata_editor_get_picture(metadata_editor_h metadata, int index
 #endif
 		default:
 			metadata_editor_error("Wrong file type\n");
-			*picture = NULL; *size = 0; *mime_type = NULL;
 			return METADATA_EDITOR_ERROR_INVALID_PARAMETER;
 	}
 }
@@ -2361,37 +1820,24 @@ extern "C" int metadata_editor_get_picture(metadata_editor_h metadata, int index
 // *** This function appends a cover art picture to the file *** //
 extern "C" int metadata_editor_append_picture(metadata_editor_h metadata, const char *path)
 {
+	int ret = METADATA_EDITOR_ERROR_NONE;
+	void *picture = NULL;
+	int size = 0;
+	char *type = NULL;
+
 	// Check if we have valid arguments to work with
-	if((metadata == NULL) || (path == NULL))
-	{
-		metadata_editor_error("INVALID Parameter\n");
-		return METADATA_EDITOR_ERROR_INVALID_PARAMETER;
-	}
+	metadata_editor_retvm_if(metadata == NULL, METADATA_EDITOR_ERROR_INVALID_PARAMETER, "INVALID PARAMETER");
+	metadata_editor_retvm_if(path == NULL, METADATA_EDITOR_ERROR_INVALID_PARAMETER, "INVALID PARAMETER");
 
 	metadata_editor_s* _metadata = (metadata_editor_s*) metadata;
+	metadata_editor_retvm_if(_metadata->file == NULL, METADATA_EDITOR_ERROR_INVALID_PARAMETER, "File loading fail.\n");
 
 	// Check if the file, given through metadata, exists and is opened correctly
-	if(_metadata->file && _metadata->isOpen == false)
-	{
-		metadata_editor_error("File does not exist or you have no rights to open it\n");
-		return METADATA_EDITOR_ERROR_PERMISSION_DENIED;
-	}
-	if(_metadata->isReadOnly)					// Check if the file is writable or it is readonly
-	{
-		metadata_editor_error("File is readonly. Unable to modify\n");
-		return METADATA_EDITOR_ERROR_OPERATION_FAILED;
-	}
-
-	int ret;
-	void *picture;
-	int size;
-	char *type;
+	metadata_editor_retvm_if(_metadata->file && _metadata->isOpen == false,METADATA_EDITOR_ERROR_PERMISSION_DENIED,"File does not exist or you have no rights to open it\n");
+	metadata_editor_retvm_if(_metadata->isReadOnly, METADATA_EDITOR_ERROR_OPERATION_FAILED, "File is readonly. Unable to modify\n");
 
 	ret = __metadata_editor_get_picture_info(path, &picture, &size, &type);
-	if(ret != METADATA_EDITOR_ERROR_NONE) {
-		metadata_editor_error("File does not exist or you have no rights to open it\n");
-		return METADATA_EDITOR_ERROR_PERMISSION_DENIED;
-	}
+	metadata_editor_retvm_if(ret != METADATA_EDITOR_ERROR_NONE,METADATA_EDITOR_ERROR_PERMISSION_DENIED,"File does not exist or you have no rights to open it\n");
 
 	switch(_metadata->filetype)					// Process the file according to the specified file type
 	{
@@ -2404,13 +1850,15 @@ extern "C" int metadata_editor_append_picture(metadata_editor_h metadata, const 
 			if(tag2 == NULL)
 			{
 				metadata_editor_error("Error. ID3v2 tag was not created. Can not proceed metadata updating\n");
-				return METADATA_EDITOR_ERROR_OPERATION_FAILED;
+				ret =  METADATA_EDITOR_ERROR_OPERATION_FAILED;
+				break;
 			}
 			TagLib::ID3v2::AttachedPictureFrame* pictureFrame = new TagLib::ID3v2::AttachedPictureFrame();
 			if(pictureFrame == NULL)
 			{
 				metadata_editor_error("OUT_OF_MEMORY\n");
-				return METADATA_EDITOR_ERROR_OUT_OF_MEMORY;
+				ret =  METADATA_EDITOR_ERROR_OUT_OF_MEMORY;
+				break;
 			}
 			metadata_editor_info("New APIC frame will be added to the ID3v2 tag\n");
 			pictureFrame->setPicture(TagLib::ByteVector((char*)picture, size));
@@ -2418,16 +1866,19 @@ extern "C" int metadata_editor_append_picture(metadata_editor_h metadata, const 
 			pictureFrame->setMimeType(type);
 
 			tag2->addFrame(pictureFrame);
-			return METADATA_EDITOR_ERROR_NONE;
+
+			ret =  METADATA_EDITOR_ERROR_NONE;
+			break;
 		}
 		case METADATA_EDITOR_FORMAT_MP4:
 		{
 			TagLib::MP4::File* _file = (TagLib::MP4::File*) _metadata->file;
 			TagLib::MP4::Tag* tag = _file->tag();
-			if(!tag)										// Check if we have a valid tag for processing
+			if(!tag)
 			{
 				metadata_editor_error("Tag was not created\n");
-				return METADATA_EDITOR_ERROR_OPERATION_FAILED;
+				ret =  METADATA_EDITOR_ERROR_OPERATION_FAILED;
+				break;
 			}
 
 			// Get map of items directly from tag and launch a search of specific item
@@ -2447,7 +1898,9 @@ extern "C" int metadata_editor_append_picture(metadata_editor_h metadata, const 
 				TagLib::MP4::CoverArt cover(format, TagLib::ByteVector((char*)picture, size));
 				lst.append(cover);
 				itemMap.insert("covr", TagLib::MP4::Item(lst));
-				return METADATA_EDITOR_ERROR_NONE;
+
+				ret =  METADATA_EDITOR_ERROR_NONE;
+				break;
 			}
 			else											// Item was not found
 			{
@@ -2463,7 +1916,9 @@ extern "C" int metadata_editor_append_picture(metadata_editor_h metadata, const 
 				TagLib::MP4::CoverArtList lst;
 				lst.append(cover);
 				itemMap.insert("covr", TagLib::MP4::Item(lst));
-				return METADATA_EDITOR_ERROR_NONE;
+
+				ret =  METADATA_EDITOR_ERROR_NONE;
+				break;
 			}
 		}
 #if 0
@@ -2474,7 +1929,8 @@ extern "C" int metadata_editor_append_picture(metadata_editor_h metadata, const 
 			if(frontCover == NULL)
 			{
 				metadata_editor_error("OUT_OF_MEMORY\n");
-				return METADATA_EDITOR_ERROR_OUT_OF_MEMORY;
+				ret =  METADATA_EDITOR_ERROR_OUT_OF_MEMORY;
+				break;
 			}
 			frontCover->setData(TagLib::ByteVector((char*)picture, size));
 			frontCover->setType(TagLib::FLAC::Picture::FrontCover);
@@ -2482,7 +1938,8 @@ extern "C" int metadata_editor_append_picture(metadata_editor_h metadata, const 
 
 			metadata_editor_info("Picture will be added to FLAC file\n");
 			_file->addPicture(frontCover);
-			return METADATA_EDITOR_ERROR_NONE;
+			ret =  METADATA_EDITOR_ERROR_NONE;
+			break;
 		}
 		case METADATA_EDITOR_FORMAT_WAV:
 		{
@@ -2493,51 +1950,51 @@ extern "C" int metadata_editor_append_picture(metadata_editor_h metadata, const 
 			if(tag2 == NULL)
 			{
 				metadata_editor_error("Error. ID3v2 tag was not created. Can not proceed metadata updating\n");
-				return METADATA_EDITOR_ERROR_OPERATION_FAILED;
+				ret =  METADATA_EDITOR_ERROR_OPERATION_FAILED;
+				break;
 			}
 			TagLib::ID3v2::AttachedPictureFrame* pictureFrame = new TagLib::ID3v2::AttachedPictureFrame();
 			if(pictureFrame == NULL)
 			{
 				metadata_editor_error("OUT_OF_MEMORY\n");
-				return METADATA_EDITOR_ERROR_OUT_OF_MEMORY;
+				ret = METADATA_EDITOR_ERROR_OUT_OF_MEMORY;
+				break;
 			}
 			metadata_editor_info("New APIC frame will be added to the ID3v2 tag\n");
 			pictureFrame->setPicture(TagLib::ByteVector((char*)picture, size));
 			pictureFrame->setType(TagLib::ID3v2::AttachedPictureFrame::FrontCover);
 			pictureFrame->setMimeType(type);
 			tag2->addFrame(pictureFrame);
-			return METADATA_EDITOR_ERROR_NONE;
+			ret =  METADATA_EDITOR_ERROR_NONE;
+			break;
 		}
 #endif
 		default:
+		{
 			metadata_editor_error("Wrong file type\n");
-			return METADATA_EDITOR_ERROR_NOT_SUPPORTED;
+			ret =  METADATA_EDITOR_ERROR_NOT_SUPPORTED;
+			break;
+		}
 	}
+
+	META_SAFE_FREE(picture);
+	META_SAFE_FREE(type);
+
+	return ret;
 }
 
 // *** This function is used to delete picture with specified index *** //
 extern "C" int metadata_editor_remove_picture(metadata_editor_h metadata, int index)
 {
 	// Check if we have a valid argument to work with
-	if(metadata == NULL)
-	{
-		metadata_editor_error("INVALID Parameter\n");
-		return METADATA_EDITOR_ERROR_INVALID_PARAMETER;
-	}
+	metadata_editor_retvm_if(metadata == NULL, METADATA_EDITOR_ERROR_INVALID_PARAMETER, "INVALID handler.");
 
 	metadata_editor_s* _metadata = (metadata_editor_s*) metadata;
+	metadata_editor_retvm_if(_metadata->file == NULL, METADATA_EDITOR_ERROR_INVALID_PARAMETER, "File loading fail.\n");
 
 	// Check if the file, given through metadata, exists and is opened correctly
-	if(_metadata->file && _metadata->isOpen == false)
-	{
-		metadata_editor_error("File does not exist or you have no rights to open it\n");
-		return METADATA_EDITOR_ERROR_PERMISSION_DENIED;
-	}
-	if(_metadata->isReadOnly)					// Check if the file is writable or it is readonly
-	{
-		metadata_editor_error("File is readonly. Unable to modify\n");
-		return METADATA_EDITOR_ERROR_OPERATION_FAILED;
-	}
+	metadata_editor_retvm_if(_metadata->file && _metadata->isOpen == false,METADATA_EDITOR_ERROR_PERMISSION_DENIED,"File does not exist or you have no rights to open it\n");
+	metadata_editor_retvm_if(_metadata->isReadOnly, METADATA_EDITOR_ERROR_OPERATION_FAILED, "File is readonly. Unable to modify\n");
 
 	switch(_metadata->filetype)					// Process the file according to the specified file type
 	{
@@ -2547,11 +2004,7 @@ extern "C" int metadata_editor_remove_picture(metadata_editor_h metadata, int in
 			TagLib::MPEG::File* _file = (TagLib::MPEG::File*)_metadata->file;
 			TagLib::ID3v2::Tag* tag2 = _file->ID3v2Tag(true);
 			// Check if the valid tag pointer exists
-			if(tag2 == NULL)
-			{
-				metadata_editor_error("Error. ID3v2 tag does not exist. Can not remove picture\n");
-				return METADATA_EDITOR_ERROR_OPERATION_FAILED;
-			}
+			metadata_editor_retvm_if(tag2 == NULL,METADATA_EDITOR_ERROR_OPERATION_FAILED,"Error. ID3v2 tag was not created. Can not proceed metadata updating");
 			TagLib::ID3v2::FrameList lst = tag2->frameListMap()["APIC"];
 			// Check if there are pictures in the tag
 			if(lst.isEmpty())
@@ -2586,11 +2039,7 @@ extern "C" int metadata_editor_remove_picture(metadata_editor_h metadata, int in
 		{
 			TagLib::MP4::File* _file = (TagLib::MP4::File*) _metadata->file;
 			TagLib::MP4::Tag* tag = _file->tag();
-			if(!tag)									// Check if we have a valid tag for processing
-			{
-				metadata_editor_error("Tag does not exist\n");
-				return METADATA_EDITOR_ERROR_OPERATION_FAILED;
-			}
+			metadata_editor_retvm_if(tag == NULL,METADATA_EDITOR_ERROR_OPERATION_FAILED,"Error. tag not exist.");
 
 			// Get map of items directly from tag and launch a search of specific item
 			TagLib::MP4::ItemListMap& itemMap = tag->itemListMap();
@@ -2705,11 +2154,7 @@ extern "C" int metadata_editor_remove_picture(metadata_editor_h metadata, int in
 extern "C" int metadata_editor_destroy(metadata_editor_h metadata)
 {
 	// Check if we have a valid argument to work with
-	if(metadata == NULL)
-	{
-		metadata_editor_error("INVALID Handle\n");
-		return METADATA_EDITOR_ERROR_INVALID_PARAMETER;
-	}
+	metadata_editor_retvm_if(metadata == NULL, METADATA_EDITOR_ERROR_INVALID_PARAMETER, "INVALID PARAMETER");
 
 	metadata_editor_s *_metadata = (metadata_editor_s*)metadata;
 
