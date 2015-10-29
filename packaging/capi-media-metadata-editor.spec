@@ -1,6 +1,6 @@
 Name:       capi-media-metadata-editor
 Summary:    A metadata editor library in SLP C API
-Version: 0.1.3
+Version: 0.1.4
 Release:    0
 Group:      System/Libraries
 License:    Apache-2.0
