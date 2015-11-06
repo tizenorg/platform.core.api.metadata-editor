@@ -17,6 +17,10 @@
 #include <metadata_editor.h>
 #include <metadata_editor_private.h>
 #include <aul.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <fcntl.h>
+#include <unistd.h>
 
 static int __ID3_getTwixFrameByName(metadata_editor_s* _metadata, TagLib::ID3v1::Tag* tag1, TagLib::ID3v2::Tag* tag2, const char* frameID, char** value);
 static int __ID3_setTwixFrameByName(metadata_editor_s* _metadata, TagLib::ID3v1::Tag* tag1, TagLib::ID3v2::Tag* tag2, const char* frameID, const char* value);
@@ -814,13 +818,6 @@ int __metadata_editor_get_picture_info(const char *path, void **picture, int *si
 	return METADATA_EDITOR_ERROR_NONE;
 }
 
-bool __metadata_editor_file_exist(const std::string& name)
-{
-	struct stat buffer;
-	return (stat(name.c_str(), &buffer) == 0);
-}
-
-
 // *** This function is used to allocate the metadata_editor_s in memory		*** //
 // *** The structure metadata_editor_s contains all information about the file	*** //
 extern "C" int metadata_editor_create(metadata_editor_h *metadata)
@@ -849,10 +846,20 @@ extern "C" int metadata_editor_set_path(metadata_editor_h metadata, const char *
 	metadata_editor_retvm_if(metadata == NULL, METADATA_EDITOR_ERROR_INVALID_PARAMETER, "INVALID Handle");
 	metadata_editor_retvm_if(path == NULL, METADATA_EDITOR_ERROR_INVALID_PARAMETER, "INVALID Handle");
 
-	if (!__metadata_editor_file_exist(path)) {
+	int exist;
+
+	/* check the file exits actually */
+	exist = open(path, O_RDONLY);
+	if(exist < 0) {
 		metadata_editor_error("Not exist file\n");
-		return METADATA_EDITOR_ERROR_FILE_EXISTS;
+		if (errno == EACCES || errno == EPERM) {
+			return METADATA_EDITOR_ERROR_PERMISSION_DENIED;
+		} else {
+			return METADATA_EDITOR_ERROR_FILE_EXISTS;
+		}
 	}
+
+	close(exist);
 
 	metadata_editor_s *_metadata = (metadata_editor_s*)metadata;
 	int media_type = METADATA_EDITOR_FORMAT_NOTYPE;
@@ -862,6 +869,16 @@ extern "C" int metadata_editor_set_path(metadata_editor_h metadata, const char *
 	switch (media_type) {							// Parse file according the specified type
 		case METADATA_EDITOR_FORMAT_MP3:
 		{
+			if (_metadata->file) {
+				TagLib::MPEG::File* _file = (TagLib::MPEG::File*)_metadata->file;
+				metadata_editor_info("file free [%lX]", _metadata->file);
+				delete _file;
+				_metadata->file = NULL;
+				_metadata->filetype = METADATA_EDITOR_FORMAT_NOTYPE;
+				_metadata->isOpen = false;
+				_metadata->isReadOnly = true;
+			}
+
 			// Allocate the file object in memory to work with it later on
 			TagLib::MPEG::File* _file = new TagLib::MPEG::File(path);
 
@@ -892,6 +909,16 @@ extern "C" int metadata_editor_set_path(metadata_editor_h metadata, const char *
 		}
 		case METADATA_EDITOR_FORMAT_MP4:
 		{
+			if (_metadata->file) {
+				TagLib::MP4::File* _file = (TagLib::MP4::File*)_metadata->file;
+				metadata_editor_info("file free [%lX]", _metadata->file);
+				delete _file;
+				_metadata->file = NULL;
+				_metadata->filetype = METADATA_EDITOR_FORMAT_NOTYPE;
+				_metadata->isOpen = false;
+				_metadata->isReadOnly = true;
+			}
+
 			// Allocate the file object in memory to work with it later on
 			TagLib::MP4::File* _file = new TagLib::MP4::File(path);
 
@@ -1976,14 +2003,14 @@ extern "C" int metadata_editor_destroy(metadata_editor_h metadata)
 		{
 			// Bring the pointer to actual file type
 			TagLib::MPEG::File* _file = (TagLib::MPEG::File*)_metadata->file;
-			metadata_editor_info("The file with address %lX will now be freed\n", _metadata->file);
+			metadata_editor_info("file free [%lX]", _metadata->file);
 			delete _file;
 			break;
 		}
 		case METADATA_EDITOR_FORMAT_MP4:
 		{
 			TagLib::MP4::File* _file = (TagLib::MP4::File*)_metadata->file;
-			metadata_editor_info("The file with address %lX will now be freed\n", _metadata->file);
+			metadata_editor_info("file free [%lX]", _metadata->file);
 			delete _file;
 			break;
 		}
@@ -1991,28 +2018,28 @@ extern "C" int metadata_editor_destroy(metadata_editor_h metadata)
 		case METADATA_EDITOR_FORMAT_FLAC:
 		{
 			TagLib::FLAC::File* _file = (TagLib::FLAC::File*)_metadata->file;
-			metadata_editor_info("The file with address %lX will now be freed\n", _metadata->file);
+			metadata_editor_info("file free [%lX]", _metadata->file);
 			delete _file;
 			break;
 		}
 		case METADATA_EDITOR_FORMAT_OGG_VORBIS:
 		{
 			TagLib::Ogg::Vorbis::File* _file = (TagLib::Ogg::Vorbis::File*)_metadata->file;
-			metadata_editor_info("The file with address %lX will now be freed\n", _metadata->file);
+			metadata_editor_info("file free [%lX]", _metadata->file);
 			delete _file;
 			break;
 		}
 		case METADATA_EDITOR_FORMAT_OGG_FLAC:
 		{
 			TagLib::Ogg::FLAC::File* _file = (TagLib::Ogg::FLAC::File*)_metadata->file;
-			metadata_editor_info("The file with address %lX will now be freed\n", _metadata->file);
+			metadata_editor_info("file free [%lX]", _metadata->file);
 			delete _file;
 			break;
 		}
 		case METADATA_EDITOR_FORMAT_WAV:
 		{
 			TagLib::RIFF::WAV::File* _file = (TagLib::RIFF::WAV::File*)_metadata->file;
-			metadata_editor_info("The file with address %lX will now be freed\n", _metadata->file);
+			metadata_editor_info("file free [%lX]", _metadata->file);
 			delete _file;
 			break;
 		}
