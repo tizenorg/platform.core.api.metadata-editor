@@ -957,7 +957,7 @@ extern "C" int metadata_editor_set_path(metadata_editor_h metadata, const char *
 
 			_metadata->filetype = METADATA_EDITOR_FORMAT_FLAC;
 
-			if (_file->isOpen())	{				// Check if the file was opened successfully
+			if (_file->isOpen()) {				// Check if the file was opened successfully
 				metadata_editor_info("The file is successfully opened. Address is %lX\n", _metadata->file);
 				_metadata->isOpen = true;
 			} else {							// The file does not exist or you have no permission to process it
@@ -1363,7 +1363,7 @@ extern "C" int metadata_editor_set_metadata(metadata_editor_h metadata, metadata
 			// Bring the pointer to actual file type and make tags pointers
 			TagLib::Ogg::FLAC::File* _file = (TagLib::Ogg::FLAC::File*)_metadata->file;
 			TagLib::Ogg::XiphComment* xtag = _file->tag();
-			if (!xtag)	{							// Check if we have a valid tag for processing
+			if (!xtag) {							// Check if we have a valid tag for processing
 				metadata_editor_error("Error. Xiph Comment was not created. Can not proceed metadata updating\n");
 				return METADATA_EDITOR_ERROR_OPERATION_FAILED;
 			}
