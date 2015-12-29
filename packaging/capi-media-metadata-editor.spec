@@ -1,8 +1,8 @@
 Name:       capi-media-metadata-editor
-Summary:    A metadata editor library in SLP C API
+Summary:    A metadata editor library in Tizen Native API
 Version: 0.1.5
 Release:    0
-Group:      System/Libraries
+Group:      Multimedia/API
 License:    Apache-2.0
 Source0:    %{name}-%{version}.tar.gz
 BuildRequires:  cmake
@@ -14,15 +14,15 @@ Requires(post): /sbin/ldconfig
 Requires(postun): /sbin/ldconfig
 
 %description
-A metadata editor library in SLP C API
+A media metadata editor library in Tizen Native API.
 
 %package devel
-Summary:  A metadata editor library in SLP C API (Development)
-Group:    TO_BE/FILLED_IN
+Summary:  A metadata editor library in Tizen Native API (Development)
+Group:    Multimedia/Development
 Requires: %{name} = %{version}-%{release}
 
 %description devel
-A metadata editor library in SLP C API
+A media metadata editor library in Tizen Native API. (Development files included)
 
 %prep
 %setup -q
