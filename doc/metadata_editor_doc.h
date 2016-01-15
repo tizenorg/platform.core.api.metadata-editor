@@ -31,7 +31,7 @@
 
 /**
  * @addtogroup CAPI_MEDIA_METADATA_EDITOR_MODULE
- * @brief The @ref CAPI_MEDIA_METADATA_EDITOR_MODULE API provides functions for editing the metadata of several popular audio format.
+ * @brief The @ref CAPI_MEDIA_METADATA_EDITOR_MODULE API provides functions for editing the metadata of mp3, mp4 contents.
  * @ingroup CAPI_MEDIA_FRAMEWORK
  * @section CAPI_MEDIA_METADATA_EDITOR_MODULE_HEADER Required Header
  *    \#include <metadata_editor.h>
