@@ -308,19 +308,19 @@ static bool __add_picture(metadata_editor_h metadata)
 	__flush();
 
 	switch (c2) {
-		case 1:
-			printf("\n===========================");
-			printf("\n Your choice is TestImage.png\n");
-			picture_filename = strdup("TestImage.png");
-			break;
+	case 1:
+		printf("\n===========================");
+		printf("\n Your choice is TestImage.png\n");
+		picture_filename = strdup("TestImage.png");
+		break;
 
-		case 2:
-			printf("\n===========================");
-			printf("\n Your choice is TestImage.jpg\n");
-			picture_filename = strdup("TestImage.jpg");
-			break;
-		default:
-			break;
+	case 2:
+		printf("\n===========================");
+		printf("\n Your choice is TestImage.jpg\n");
+		picture_filename = strdup("TestImage.jpg");
+		break;
+	default:
+		break;
 	}
 
 	metadata_editor_append_picture(metadata, picture_filename);
@@ -367,7 +367,7 @@ int main(int argc, char *argv[])
 
 	if (cnt < 1) {
 		printf("\n====================================================================================================");
-		printf("\n Please type file path and media type as media-metadata-test /opt/usr/media/Sounds/<filename.mp3>   ");
+		printf("\n Please type file path and media type as media-metadata-test /opt/usr/media/Sounds/<filename.mp3>");
 		printf("\n====================================================================================================");
 		return 0;
 	}
@@ -377,7 +377,7 @@ int main(int argc, char *argv[])
 	/*__printRetValue("metadata_editor_create(...)",ret); */
 
 	if (ret != METADATA_EDITOR_ERROR_NONE) {
-		printf("Fail metadata_editor_create()  at line [%d]\n",  __LINE__);
+		printf("Fail metadata_editor_create() at line [%d]\n", __LINE__);
 		return 0;
 	}
 
@@ -385,7 +385,7 @@ int main(int argc, char *argv[])
 	/*__printRetValue("metadata_editor_set_path(...)",ret); */
 
 	if (ret != METADATA_EDITOR_ERROR_NONE) {
-		printf("Fail metadata_editor_set_path() at line [%d]\n",  __LINE__);
+		printf("Fail metadata_editor_set_path() at line [%d]\n", __LINE__);
 		goto exception;
 	}
 
@@ -404,42 +404,42 @@ int main(int argc, char *argv[])
 		printf("9 - Quit.            Press 9 ");
 		printf("\n=========================\n");
 		printf("\n Your choice : ");
-		dummy = scanf("%u",  &c2);
+		dummy = scanf("%u", &c2);
 		__flush();
 
 		switch (c2) {
-			case 1:
-				printf("\n==============");
-				printf("\n Reading tags \n");
-				__get_tag_info(metadata);
-				break;
-			case 2:
-				printf("\n==============");
-				printf("\n Writing tags ");
-				__write_tag_info(metadata);
-				break;
-			case 3:
-				printf("\n==============");
-				printf("\n Deleting tags ");
-				__delete_tag_info(metadata);
-				break;
-			case 4:
-				printf("\n==============");
-				printf("\n Adding picture ");
-				__add_picture(metadata);
-				break;
-			case 5:
-				printf("\n==============");
-				printf("\n Deleting pictures \n");
-				__delete_pictures(metadata);
-				break;
-			case 6:
-				printf("\n==============");
-				printf("\n Saving updated tags \n");
-				__save_tags(metadata);
-				break;
-			default:
-				break;
+		case 1:
+			printf("\n==============");
+			printf("\n Reading tags \n");
+			__get_tag_info(metadata);
+			break;
+		case 2:
+			printf("\n==============");
+			printf("\n Writing tags ");
+			__write_tag_info(metadata);
+			break;
+		case 3:
+			printf("\n==============");
+			printf("\n Deleting tags ");
+			__delete_tag_info(metadata);
+			break;
+		case 4:
+			printf("\n==============");
+			printf("\n Adding picture ");
+			__add_picture(metadata);
+			break;
+		case 5:
+			printf("\n==============");
+			printf("\n Deleting pictures \n");
+			__delete_pictures(metadata);
+			break;
+		case 6:
+			printf("\n==============");
+			printf("\n Saving updated tags \n");
+			__save_tags(metadata);
+			break;
+		default:
+			break;
 		}
 	}
 
