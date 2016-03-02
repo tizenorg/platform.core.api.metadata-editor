@@ -31,6 +31,9 @@ extern "C" {
 * @{
 */
 
+/** @brief Definition for Metadata editor Error Class */
+#define METADATA_EDITOR_ERROR_CLASS				TIZEN_ERROR_METADATA_EDITOR
+
 /**
  * @ingroup CAPI_MEDIA_METADATA_EDITOR_MODULE
  * @brief The enumerations of media metadata error
@@ -38,13 +41,13 @@ extern "C" {
  */
 typedef enum
 {
-	METADATA_EDITOR_ERROR_NONE			       	= TIZEN_ERROR_METADATA_EDITOR,				/**< Successful */
+	METADATA_EDITOR_ERROR_NONE			       	= TIZEN_ERROR_NONE,				/**< Successful */
 	METADATA_EDITOR_ERROR_INVALID_PARAMETER			= TIZEN_ERROR_INVALID_PARAMETER,		/**< Invalid parameter */
 	METADATA_EDITOR_ERROR_OUT_OF_MEMORY 			= TIZEN_ERROR_OUT_OF_MEMORY,			/**< Out of memory */
 	METADATA_EDITOR_ERROR_FILE_EXISTS			= TIZEN_ERROR_FILE_EXISTS,			/**< File not exist */
 	METADATA_EDITOR_ERROR_PERMISSION_DENIED         = TIZEN_ERROR_PERMISSION_DENIED,        /**< Permission denied */
 	METADATA_EDITOR_ERROR_NOT_SUPPORTED				= TIZEN_ERROR_NOT_SUPPORTED,		/**< Unsupported type */
-	METADATA_EDITOR_ERROR_OPERATION_FAILED			= TIZEN_ERROR_METADATA_EDITOR |0x01,		/**< Invalid internal operation */
+	METADATA_EDITOR_ERROR_OPERATION_FAILED			= METADATA_EDITOR_ERROR_CLASS |0x01,		/**< Invalid internal operation */
 } metadata_editor_error_e;
 
 
