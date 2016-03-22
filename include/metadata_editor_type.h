@@ -37,7 +37,7 @@ extern "C" {
 /**
  * @ingroup CAPI_MEDIA_METADATA_EDITOR_MODULE
  * @brief The enumerations of media metadata error
- * @since_tizen 2.4
+ * @since_tizen @if MOBILE 2.4 @elseif WEARABLE 3.0 @endif
  */
 typedef enum
 {
@@ -54,7 +54,7 @@ typedef enum
 /**
  * @ingroup CAPI_MEDIA_METADATA_EDITOR_MODULE
  * @brief The enumerations of attribute
- * @since_tizen 2.4
+ * @since_tizen @if MOBILE 2.4 @elseif WEARABLE 3.0 @endif
  */
 typedef enum {
 	METADATA_EDITOR_ATTR_ARTIST,					/**< Artist*/
@@ -75,7 +75,7 @@ typedef enum {
 /**
  * @ingroup CAPI_MEDIA_METADATA_EDITOR_MODULE
  * @brief The handle of media metadata
- * @since_tizen 2.4
+ * @since_tizen @if MOBILE 2.4 @elseif WEARABLE 3.0 @endif
  */
 typedef void * metadata_editor_h;
 

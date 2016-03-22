@@ -37,7 +37,7 @@ extern "C" {
 
 /**
  * @brief Create metadata
- * @since_tizen 2.4
+ * @since_tizen @if MOBILE 2.4 @elseif WEARABLE 3.0 @endif
  *
  * @remarks You must release @a metadata using metadata_editor_destroy().
  *
@@ -53,7 +53,7 @@ int metadata_editor_create(metadata_editor_h *metadata);
 
 /**
  * @brief Set file path to read or write metadata
- * @since_tizen 2.4
+ * @since_tizen @if MOBILE 2.4 @elseif WEARABLE 3.0 @endif
  *
  * @remarks In case of accessing specific path in internal storage or external storage, you may add the privilege for accessing the path. \n
  *                   For example, if you get the specific path by using storage_get_directory(). you should add previlege http://tizen.org/privilege/mediastorage or http://tizen.org/privilege/externalstorage.
@@ -75,7 +75,7 @@ int metadata_editor_set_path(metadata_editor_h metadata, const char *path);
 
 /**
  * @brief Get the metadata corresponding to the attribute.
- * @since_tizen 2.4
+ * @since_tizen @if MOBILE 2.4 @elseif WEARABLE 3.0 @endif
  *
  * @remarks You must release @a value using @c free(). \n
  *                   If the attribute value of the metadata is empty, return value is NULL. \n
@@ -99,7 +99,7 @@ int metadata_editor_get_metadata(metadata_editor_h metadata, metadata_editor_att
 
 /**
  * @brief Set the attribute of the metadata.
- * @since_tizen 2.4
+ * @since_tizen @if MOBILE 2.4 @elseif WEARABLE 3.0 @endif
  * @details This function set the attribute of the metadata for updating the metadata. \n
  *
  * @remarks You must release @a value using @c free(). \n
@@ -121,7 +121,7 @@ int metadata_editor_set_metadata(metadata_editor_h metadata, metadata_editor_att
 
 /**
  * @brief Update the modified metadata
- * @since_tizen 2.4
+ * @since_tizen @if MOBILE 2.4 @elseif WEARABLE 3.0 @endif
  * @details This function update the metadata in the media file that is modified by metadata_editor_set_metadata().
  *
  * @remarks In case of accessing specific path in internal storage or external storage, you may add the privilege for accessing the path. \n
@@ -141,7 +141,7 @@ int metadata_editor_update_metadata(metadata_editor_h metadata);
 
 /**
  * @brief Get the picture in the media file
- * @since_tizen 2.4
+ * @since_tizen @if MOBILE 2.4 @elseif WEARABLE 3.0 @endif
  *
  * @remarks You must release @a picture using @c free(). \n
  *                   In case of accessing specific path in internal storage or external storage, you may add the privilege for accessing the path. \n
@@ -165,7 +165,7 @@ int metadata_editor_get_picture(metadata_editor_h metadata, int index, void **pi
 
 /**
  * @brief Append the picture to the media file
- * @since_tizen 2.4
+ * @since_tizen @if MOBILE 2.4 @elseif WEARABLE 3.0 @endif
  *
  * @remarks You must call metadata_editor_update_metadata() for applying to the metadata of the media file. if not, you will see the existing metadata when you call metadata_editor_get_metadata(). \n
  *                   Image type of the metadata supports jpeg and png. \n
@@ -188,7 +188,7 @@ int metadata_editor_append_picture(metadata_editor_h metadata, const char *pictu
 
 /**
  * @brief Remove artwork image from media file
- * @since_tizen 2.4
+ * @since_tizen @if MOBILE 2.4 @elseif WEARABLE 3.0 @endif
  *
  * @remarks You must call metadata_editor_update_metadata() for applying to the metadata of the media file. if not, you will see the existing metadata when you call metadata_editor_get_metadata(). \n
  *
@@ -207,7 +207,7 @@ int metadata_editor_remove_picture(metadata_editor_h metadata, int index);
 
 /**
  * @brief Destroy metadata
- * @since_tizen 2.4
+ * @since_tizen @if MOBILE 2.4 @elseif WEARABLE 3.0 @endif
  *
  * @param [in] metadata The handle to metadata
  * @return 0 on success, otherwise a negative error value
