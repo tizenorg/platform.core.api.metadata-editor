@@ -39,8 +39,7 @@ extern "C" {
  * @brief The enumerations of media metadata error
  * @since_tizen @if MOBILE 2.4 @elseif WEARABLE 3.0 @endif
  */
-typedef enum
-{
+typedef enum {
 	METADATA_EDITOR_ERROR_NONE			       	= TIZEN_ERROR_NONE,				/**< Successful */
 	METADATA_EDITOR_ERROR_INVALID_PARAMETER			= TIZEN_ERROR_INVALID_PARAMETER,		/**< Invalid parameter */
 	METADATA_EDITOR_ERROR_OUT_OF_MEMORY 			= TIZEN_ERROR_OUT_OF_MEMORY,			/**< Out of memory */
