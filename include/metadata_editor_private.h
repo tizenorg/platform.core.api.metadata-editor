@@ -53,9 +53,9 @@ extern "C" {
 #undef LOG_TAG
 #endif
 #define LOG_TAG "CAPI_MEDIA_METADATA_EDITOR"
-#define META_SAFE_FREE(src)      { if(src) {free(src); src = NULL;} }
-#define META_MALLOC(src, size)	{ if (size <= 0) {src = NULL;} \
-							else { src = (char *)malloc(size); if(src) memset(src, 0x0, size);} }
+#define META_SAFE_FREE(src)      { if (src) {free(src); src = NULL; } }
+#define META_MALLOC(src, size)	{ if (size <= 0) src = NULL;  \
+							else { src = (char *)malloc(size); if (src) memset(src, 0x0, size); } }
 
 #define META_MAX_BUF_LEN 20
 
@@ -81,8 +81,8 @@ extern "C" {
 	} while (0)
 
 #define metadata_editor_retvm_if(expr, val, fmt, arg...) do { \
-			if(expr) { \
-				LOGE(""fmt"", ##arg); 	\
+			if (expr) { \
+				LOGE(""fmt"", ##arg);	\
 				return (val); \
 			} \
 		} while (0)

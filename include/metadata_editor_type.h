@@ -39,11 +39,10 @@ extern "C" {
  * @brief The enumerations of media metadata error
  * @since_tizen @if MOBILE 2.4 @elseif WEARABLE 3.0 @endif
  */
-typedef enum
-{
-	METADATA_EDITOR_ERROR_NONE			       	= TIZEN_ERROR_NONE,				/**< Successful */
+typedef enum {
+	METADATA_EDITOR_ERROR_NONE					= TIZEN_ERROR_NONE,				/**< Successful */
 	METADATA_EDITOR_ERROR_INVALID_PARAMETER			= TIZEN_ERROR_INVALID_PARAMETER,		/**< Invalid parameter */
-	METADATA_EDITOR_ERROR_OUT_OF_MEMORY 			= TIZEN_ERROR_OUT_OF_MEMORY,			/**< Out of memory */
+	METADATA_EDITOR_ERROR_OUT_OF_MEMORY		= TIZEN_ERROR_OUT_OF_MEMORY,			/**< Out of memory */
 	METADATA_EDITOR_ERROR_FILE_EXISTS			= TIZEN_ERROR_FILE_EXISTS,			/**< File not exist */
 	METADATA_EDITOR_ERROR_PERMISSION_DENIED         = TIZEN_ERROR_PERMISSION_DENIED,        /**< Permission denied */
 	METADATA_EDITOR_ERROR_NOT_SUPPORTED				= TIZEN_ERROR_NOT_SUPPORTED,		/**< Unsupported type */
