@@ -53,8 +53,7 @@ typedef enum {
 
 // *** This is an auxiliary function that is used to get the frame value *** //
 // *** It operates with frames that exists both in ID3v1 and ID3v2 tags *** //
-static int __ID3_getTwixFrameByName(metadata_editor_s* _metadata, TagLib::ID3v1::Tag* tag1, TagLib::ID3v2::Tag* tag2, const char* frameID, char** value)
-{
+static int __ID3_getTwixFrameByName(metadata_editor_s* _metadata, TagLib::ID3v1::Tag* tag1, TagLib::ID3v2::Tag* tag2, const char* frameID, char** value) {
 	// Check if we have valid arguments to work with
 	metadata_editor_retvm_if(_metadata == NULL, METADATA_EDITOR_ERROR_INVALID_PARAMETER, "INVALID PARAMETER");
 	metadata_editor_retvm_if(frameID == NULL, METADATA_EDITOR_ERROR_INVALID_PARAMETER, "INVALID PARAMETER");
@@ -146,8 +145,7 @@ static int __ID3_getTwixFrameByName(metadata_editor_s* _metadata, TagLib::ID3v1:
 
 // *** This is an auxiliary function that is used to write the new value to the frame *** //
 // *** It operates with frames that exists both in ID3v1 and ID3v2 tags *** //
-static int __ID3_setTwixFrameByName(metadata_editor_s* _metadata, TagLib::ID3v1::Tag* tag1, TagLib::ID3v2::Tag* tag2, const char* frameID, const char* value)
-{
+static int __ID3_setTwixFrameByName(metadata_editor_s* _metadata, TagLib::ID3v1::Tag* tag1, TagLib::ID3v2::Tag* tag2, const char* frameID, const char* value) {
 	// Check if we have valid arguments to work with
 	metadata_editor_retvm_if(_metadata == NULL, METADATA_EDITOR_ERROR_INVALID_PARAMETER, "INVALID PARAMETER");
 	metadata_editor_retvm_if(frameID == NULL, METADATA_EDITOR_ERROR_INVALID_PARAMETER, "INVALID PARAMETER");
@@ -216,8 +214,7 @@ static int __ID3_setTwixFrameByName(metadata_editor_s* _metadata, TagLib::ID3v1:
 }
 
 // *** This function reads frames that exist only in ID3v2 tag *** //
-static int __ID3_getFrameByName(metadata_editor_s* _metadata, TagLib::ID3v2::Tag* tag2, const char* frameID, char** value)
-{
+static int __ID3_getFrameByName(metadata_editor_s* _metadata, TagLib::ID3v2::Tag* tag2, const char* frameID, char** value) {
 	// Check if we have valid arguments to work with
 	metadata_editor_retvm_if(_metadata == NULL, METADATA_EDITOR_ERROR_INVALID_PARAMETER, "INVALID PARAMETER");
 	metadata_editor_retvm_if(frameID == NULL, METADATA_EDITOR_ERROR_INVALID_PARAMETER, "INVALID PARAMETER");
@@ -246,8 +243,7 @@ static int __ID3_getFrameByName(metadata_editor_s* _metadata, TagLib::ID3v2::Tag
 }
 
 // *** This function writes frames that exist only in ID3v2 tag *** //
-static int __ID3_setFrameByName(metadata_editor_s* _metadata, TagLib::ID3v2::Tag* tag2, const char* frameID, const char* value)
-{
+static int __ID3_setFrameByName(metadata_editor_s* _metadata, TagLib::ID3v2::Tag* tag2, const char* frameID, const char* value) {
 	// Check if we have valid arguments to work with
 	metadata_editor_retvm_if(_metadata == NULL, METADATA_EDITOR_ERROR_INVALID_PARAMETER, "INVALID PARAMETER");
 	metadata_editor_retvm_if(frameID == NULL, METADATA_EDITOR_ERROR_INVALID_PARAMETER, "INVALID PARAMETER");
@@ -285,8 +281,7 @@ static int __ID3_setFrameByName(metadata_editor_s* _metadata, TagLib::ID3v2::Tag
 }
 
 // *** This function is used to receive the number of pictures stored in ID3v2 tag of file *** //
-static int __ID3_getNumberOfPictures(metadata_editor_s* _metadata, TagLib::ID3v2::Tag* tag2, char** value)
-{
+static int __ID3_getNumberOfPictures(metadata_editor_s* _metadata, TagLib::ID3v2::Tag* tag2, char** value) {
 	// Check if parameters are valid
 	metadata_editor_retvm_if(_metadata == NULL, METADATA_EDITOR_ERROR_INVALID_PARAMETER, "INVALID PARAMETER");
 	metadata_editor_retvm_if(value == NULL, METADATA_EDITOR_ERROR_INVALID_PARAMETER, "INVALID PARAMETER");
@@ -312,8 +307,7 @@ static int __ID3_getNumberOfPictures(metadata_editor_s* _metadata, TagLib::ID3v2
 
 // *** This function is used to receive unsynchronized lyrics from ID3v2 tag in file *** //
 // *** This frame differs from other string-type frames and uses UnsynchronizedLyricsFrame instead of TextIdentificationFrame *** //
-static int __ID3_getLyricsFrame(metadata_editor_s* _metadata, TagLib::ID3v2::Tag* tag2, char** value)
-{
+static int __ID3_getLyricsFrame(metadata_editor_s* _metadata, TagLib::ID3v2::Tag* tag2, char** value) {
 	// Check if parameters are valid
 	metadata_editor_retvm_if(_metadata == NULL, METADATA_EDITOR_ERROR_INVALID_PARAMETER, "INVALID PARAMETER");
 	metadata_editor_retvm_if(value == NULL, METADATA_EDITOR_ERROR_INVALID_PARAMETER, "INVALID PARAMETER");
@@ -344,8 +338,7 @@ static int __ID3_getLyricsFrame(metadata_editor_s* _metadata, TagLib::ID3v2::Tag
 
 // *** This function is used to set text in comment frame. It processes both ID3v1 and ID3v2 tags *** //
 // *** Comment frame is different from other string-type frames. It uses CommentsFrame instead of TextIdentificationFrame *** //
-static int __ID3_setTwixCommentFrame(metadata_editor_s* _metadata, TagLib::ID3v1::Tag* tag1, TagLib::ID3v2::Tag* tag2, const char* value)
-{
+static int __ID3_setTwixCommentFrame(metadata_editor_s* _metadata, TagLib::ID3v1::Tag* tag1, TagLib::ID3v2::Tag* tag2, const char* value) {
 	// Check if we have a valid argument to work with
 	metadata_editor_retvm_if(_metadata == NULL, METADATA_EDITOR_ERROR_INVALID_PARAMETER, "INVALID PARAMETER");
 
@@ -387,8 +380,7 @@ static int __ID3_setTwixCommentFrame(metadata_editor_s* _metadata, TagLib::ID3v1
 
 // *** This function is used to set text in Lyrics frame *** //
 // *** Lyrics frame is different from other string-type frames and uses UnsynchronizedLyricsFrame instead of TextIdentificationFrame *** //
-static int __ID3_setLyricsFrame(metadata_editor_s* _metadata, TagLib::ID3v2::Tag* tag2, const char* value)
-{
+static int __ID3_setLyricsFrame(metadata_editor_s* _metadata, TagLib::ID3v2::Tag* tag2, const char* value) {
 	// Check if we have a valid argument to work with
 	metadata_editor_retvm_if(_metadata == NULL, METADATA_EDITOR_ERROR_INVALID_PARAMETER, "INVALID PARAMETER");
 
@@ -428,8 +420,7 @@ static int __ID3_setLyricsFrame(metadata_editor_s* _metadata, TagLib::ID3v2::Tag
 }
 
 // *** This function extracts string values from tag in MP4 file *** //
-static int __MP4_getStringItem(metadata_editor_s* _metadata, const char* itemname, char** value)
-{
+static int __MP4_getStringItem(metadata_editor_s* _metadata, const char* itemname, char** value) {
 	// Check if parameters are valid
 	metadata_editor_retvm_if(_metadata == NULL, METADATA_EDITOR_ERROR_INVALID_PARAMETER, "INVALID PARAMETER");
 	metadata_editor_retvm_if(itemname == NULL, METADATA_EDITOR_ERROR_INVALID_PARAMETER, "INVALID PARAMETER");
@@ -465,8 +456,7 @@ static int __MP4_getStringItem(metadata_editor_s* _metadata, const char* itemnam
 }
 
 // *** This function extracts integer value from item in MP4 tag *** //
-static int __MP4_getIntegerItem(metadata_editor_s* _metadata, const char* itemname, char** value)
-{
+static int __MP4_getIntegerItem(metadata_editor_s* _metadata, const char* itemname, char** value) {
 	// Check if parameters are valid
 	metadata_editor_retvm_if(_metadata == NULL, METADATA_EDITOR_ERROR_INVALID_PARAMETER, "INVALID PARAMETER");
 	metadata_editor_retvm_if(itemname == NULL, METADATA_EDITOR_ERROR_INVALID_PARAMETER, "INVALID PARAMETER");
@@ -500,8 +490,7 @@ static int __MP4_getIntegerItem(metadata_editor_s* _metadata, const char* itemna
 }
 
 // *** This function adds (or changes) string item of itemname type *** //
-static int __MP4_updateStringItem(metadata_editor_s* _metadata, const char* itemname, const char* value)
-{
+static int __MP4_updateStringItem(metadata_editor_s* _metadata, const char* itemname, const char* value) {
 	// Check if parameters are valid
 	metadata_editor_retvm_if(_metadata == NULL, METADATA_EDITOR_ERROR_INVALID_PARAMETER, "INVALID PARAMETER");
 	metadata_editor_retvm_if(itemname == NULL, METADATA_EDITOR_ERROR_INVALID_PARAMETER, "INVALID PARAMETER");
@@ -532,8 +521,7 @@ static int __MP4_updateStringItem(metadata_editor_s* _metadata, const char* item
 }
 
 // *** This function adds (or changes) integer item of itemname type *** //
-static int __MP4_updateIntegerItem(metadata_editor_s* _metadata, const char* itemname, const char* value)
-{
+static int __MP4_updateIntegerItem(metadata_editor_s* _metadata, const char* itemname, const char* value) {
 	// Check if parameters are valid
 	metadata_editor_retvm_if(_metadata == NULL, METADATA_EDITOR_ERROR_INVALID_PARAMETER, "INVALID PARAMETER");
 	metadata_editor_retvm_if(itemname == NULL, METADATA_EDITOR_ERROR_INVALID_PARAMETER, "INVALID PARAMETER");
@@ -570,8 +558,7 @@ static int __MP4_updateIntegerItem(metadata_editor_s* _metadata, const char* ite
 }
 
 // *** This function is used to find the number of pictures stored in MP4 file *** //
-static int __MP4_getNumberOfPictures(metadata_editor_s* _metadata, char** value)
-{
+static int __MP4_getNumberOfPictures(metadata_editor_s* _metadata, char** value) {
 	// Check if parameters are valid
 	metadata_editor_retvm_if(_metadata == NULL, METADATA_EDITOR_ERROR_INVALID_PARAMETER, "INVALID PARAMETER");
 	metadata_editor_retvm_if(value == NULL, METADATA_EDITOR_ERROR_INVALID_PARAMETER, "INVALID PARAMETER");
@@ -604,8 +591,7 @@ static int __MP4_getNumberOfPictures(metadata_editor_s* _metadata, char** value)
 }
 #if 0
 // *** This function is used to extract string from Xiph Comment field *** //
-static int __xiph_getFieldValue(metadata_editor_s* _metadata, TagLib::Ogg::XiphComment* xtag, const char* fieldname, char** value)
-{
+static int __xiph_getFieldValue(metadata_editor_s* _metadata, TagLib::Ogg::XiphComment* xtag, const char* fieldname, char** value) {
 	// Check if we have a valid argument to work with
 	metadata_editor_retvm_if(_metadata == NULL, METADATA_EDITOR_ERROR_INVALID_PARAMETER, "INVALID PARAMETER");
 	metadata_editor_retvm_if(fieldname == NULL, METADATA_EDITOR_ERROR_INVALID_PARAMETER, "INVALID PARAMETER");
@@ -638,8 +624,7 @@ static int __xiph_getFieldValue(metadata_editor_s* _metadata, TagLib::Ogg::XiphC
 }
 
 // *** This function is used to write string into Xiph Comment fields *** //
-static int __xiph_updateFieldValue(metadata_editor_s* _metadata, TagLib::Ogg::XiphComment* xtag, const char* fieldname, const char* value)
-{
+static int __xiph_updateFieldValue(metadata_editor_s* _metadata, TagLib::Ogg::XiphComment* xtag, const char* fieldname, const char* value) {
 	// Check if we have a valid argument to work with
 	metadata_editor_retvm_if(_metadata == NULL, METADATA_EDITOR_ERROR_INVALID_PARAMETER, "INVALID PARAMETER");
 	metadata_editor_retvm_if(fieldname == NULL, METADATA_EDITOR_ERROR_INVALID_PARAMETER, "INVALID PARAMETER");
@@ -663,8 +648,7 @@ static int __xiph_updateFieldValue(metadata_editor_s* _metadata, TagLib::Ogg::Xi
 }
 
 // *** This function is used to receive the number of pictures in FLAC file *** //
-static int __FLAC_getNumberOfPictures(metadata_editor_s* _metadata, char** value)
-{
+static int __FLAC_getNumberOfPictures(metadata_editor_s* _metadata, char** value) {
 	// Check if parameters are valid
 	metadata_editor_retvm_if(_metadata == NULL, METADATA_EDITOR_ERROR_INVALID_PARAMETER, "INVALID Handle");
 	metadata_editor_retvm_if(value == NULL, METADATA_EDITOR_ERROR_INVALID_PARAMETER, "INVALID Value Pointer");
@@ -689,8 +673,7 @@ static int __FLAC_getNumberOfPictures(metadata_editor_s* _metadata, char** value
 	return METADATA_EDITOR_ERROR_NONE;
 }
 #endif
-int __metadata_editor_get_file_ext(const char *file_path, char *file_ext, int max_len)
-{
+int __metadata_editor_get_file_ext(const char *file_path, char *file_ext, int max_len) {
 	int i = 0;
 	unsigned int path_len = strlen(file_path);
 
@@ -708,8 +691,7 @@ int __metadata_editor_get_file_ext(const char *file_path, char *file_ext, int ma
 	return -1;
 }
 
-int __metadata_editor_get_file_type(const char *path)
-{
+int __metadata_editor_get_file_type(const char *path) {
 	int ret = 0;
 	char mimetype[255] = {0, };
 
@@ -741,8 +723,7 @@ int __metadata_editor_get_file_type(const char *path)
 	return METADATA_EDITOR_FORMAT_NOTYPE;
 }
 
-int __metadata_editor_get_picture_type(const char *path, char **type)
-{
+int __metadata_editor_get_picture_type(const char *path, char **type) {
 	int ret = 0;
 	char mimetype[255] = {0, };
 	const char *type_jpeg = "image/jpeg";
@@ -782,8 +763,7 @@ int __metadata_editor_get_picture_type(const char *path, char **type)
 	return METADATA_EDITOR_ERROR_NOT_SUPPORTED;
 }
 
-int __metadata_editor_get_picture_info(const char *path, void **picture, int *size, char **type)
-{
+int __metadata_editor_get_picture_info(const char *path, void **picture, int *size, char **type) {
 	int ret;
 
 	ret = __metadata_editor_get_picture_type(path, type);
@@ -819,8 +799,7 @@ int __metadata_editor_get_picture_info(const char *path, void **picture, int *si
 
 // *** This function is used to allocate the metadata_editor_s in memory		*** //
 // *** The structure metadata_editor_s contains all information about the file	*** //
-extern "C" int metadata_editor_create(metadata_editor_h *metadata)
-{
+extern "C" int metadata_editor_create(metadata_editor_h *metadata) {
 	// Check if we have a valid argument to work with
 	metadata_editor_retvm_if(metadata == NULL, METADATA_EDITOR_ERROR_INVALID_PARAMETER, "INVALID PARAMETER");
 
@@ -839,8 +818,7 @@ extern "C" int metadata_editor_create(metadata_editor_h *metadata)
 }
 
 // *** This function is used to open the file. It creates the instance that is responsible for connection with file *** //
-extern "C" int metadata_editor_set_path(metadata_editor_h metadata, const char *path)
-{
+extern "C" int metadata_editor_set_path(metadata_editor_h metadata, const char *path) {
 	// Check if we have valid arguments to work with
 	metadata_editor_retvm_if(metadata == NULL, METADATA_EDITOR_ERROR_INVALID_PARAMETER, "INVALID Handle");
 	metadata_editor_retvm_if(path == NULL, METADATA_EDITOR_ERROR_INVALID_PARAMETER, "INVALID Handle");
@@ -866,8 +844,7 @@ extern "C" int metadata_editor_set_path(metadata_editor_h metadata, const char *
 	media_type = __metadata_editor_get_file_type(path);
 
 	switch (media_type) {							// Parse file according the specified type
-		case METADATA_EDITOR_FORMAT_MP3:
-		{
+		case METADATA_EDITOR_FORMAT_MP3: {
 			if (_metadata->file) {
 				TagLib::MPEG::File* _file = (TagLib::MPEG::File*)_metadata->file;
 				metadata_editor_info("file free [%lX]", _metadata->file);
@@ -906,8 +883,7 @@ extern "C" int metadata_editor_set_path(metadata_editor_h metadata, const char *
 
 			return METADATA_EDITOR_ERROR_NONE;
 		}
-		case METADATA_EDITOR_FORMAT_MP4:
-		{
+		case METADATA_EDITOR_FORMAT_MP4: {
 			if (_metadata->file) {
 				TagLib::MP4::File* _file = (TagLib::MP4::File*)_metadata->file;
 				metadata_editor_info("file free [%lX]", _metadata->file);
@@ -945,8 +921,7 @@ extern "C" int metadata_editor_set_path(metadata_editor_h metadata, const char *
 			return METADATA_EDITOR_ERROR_NONE;
 		}
 #if 0
-		case METADATA_EDITOR_FORMAT_FLAC:
-		{
+		case METADATA_EDITOR_FORMAT_FLAC: {
 			// Allocate the file object in memory to work with it later on
 			TagLib::FLAC::File* _file = new TagLib::FLAC::File(path);
 
@@ -973,8 +948,7 @@ extern "C" int metadata_editor_set_path(metadata_editor_h metadata, const char *
 			}
 			return METADATA_EDITOR_ERROR_NONE;
 		}
-		case METADATA_EDITOR_FORMAT_OGG_VORBIS:
-		{
+		case METADATA_EDITOR_FORMAT_OGG_VORBIS: {
 			// Allocate the file object in memory to work with it later on
 			TagLib::Ogg::Vorbis::File* _file = new TagLib::Ogg::Vorbis::File(path);
 
@@ -1001,8 +975,7 @@ extern "C" int metadata_editor_set_path(metadata_editor_h metadata, const char *
 			}
 			return METADATA_EDITOR_ERROR_NONE;
 		}
-		case METADATA_EDITOR_FORMAT_OGG_FLAC:
-		{
+		case METADATA_EDITOR_FORMAT_OGG_FLAC: {
 			// Allocate the file object in memory to work with it later on
 			TagLib::Ogg::FLAC::File* _file = new TagLib::Ogg::FLAC::File(path);
 
@@ -1029,8 +1002,7 @@ extern "C" int metadata_editor_set_path(metadata_editor_h metadata, const char *
 			}
 			return METADATA_EDITOR_ERROR_NONE;
 		}
-		case METADATA_EDITOR_FORMAT_WAV:
-		{
+		case METADATA_EDITOR_FORMAT_WAV: {
 			// Allocate the file object in memory to work with it later on
 			TagLib::RIFF::WAV::File* _file = new TagLib::RIFF::WAV::File(path);
 
@@ -1065,8 +1037,7 @@ extern "C" int metadata_editor_set_path(metadata_editor_h metadata, const char *
 }
 
 // *** This function is used to get the tag frame (field, item - each tag has its own name for data unit) from file *** //
-extern "C" int metadata_editor_get_metadata(metadata_editor_h metadata, metadata_editor_attr_e attribute, char **value)
-{
+extern "C" int metadata_editor_get_metadata(metadata_editor_h metadata, metadata_editor_attr_e attribute, char **value) {
 	// Check if we have valid arguments to work with
 	metadata_editor_retvm_if(metadata == NULL, METADATA_EDITOR_ERROR_INVALID_PARAMETER, "INVALID Handle");
 	metadata_editor_retvm_if(value == NULL, METADATA_EDITOR_ERROR_INVALID_PARAMETER, "INVALID Value Pointer");
@@ -1079,8 +1050,7 @@ extern "C" int metadata_editor_get_metadata(metadata_editor_h metadata, metadata
 	metadata_editor_retvm_if(_metadata->file && _metadata->isOpen == false, METADATA_EDITOR_ERROR_PERMISSION_DENIED, "File does not exist or you have no rights to open it\n");
 
 	switch (_metadata->filetype) {				// Process the file according to the specified file type
-		case METADATA_EDITOR_FORMAT_MP3:
-		{
+		case METADATA_EDITOR_FORMAT_MP3: {
 			// Bring the pointer to actual file type and make tag pointers
 			TagLib::MPEG::File* _file = (TagLib::MPEG::File*)_metadata->file;
 			TagLib::ID3v1::Tag* tag1 = _file->ID3v1Tag();
@@ -1104,8 +1074,7 @@ extern "C" int metadata_editor_get_metadata(metadata_editor_h metadata, metadata
 					return METADATA_EDITOR_ERROR_INVALID_PARAMETER;
 			}
 		}
-		case METADATA_EDITOR_FORMAT_MP4:
-		{
+		case METADATA_EDITOR_FORMAT_MP4: {
 			switch (attribute) {					// Check which one of frame types was given to the function for processing
 				case METADATA_EDITOR_ATTR_ARTIST:			return __MP4_getStringItem(_metadata, "\xA9""ART", value);
 				case METADATA_EDITOR_ATTR_TITLE:			return __MP4_getStringItem(_metadata, "\xA9""nam", value);
@@ -1125,8 +1094,7 @@ extern "C" int metadata_editor_get_metadata(metadata_editor_h metadata, metadata
 			}
 		}
 #if 0
-		case METADATA_EDITOR_FORMAT_FLAC:
-		{
+		case METADATA_EDITOR_FORMAT_FLAC: {
 			// Bring the pointer to actual file type and make tags pointers
 			TagLib::FLAC::File* _file = (TagLib::FLAC::File*)_metadata->file;
 			TagLib::Ogg::XiphComment* xtag = _file->xiphComment(false);
@@ -1153,8 +1121,7 @@ extern "C" int metadata_editor_get_metadata(metadata_editor_h metadata, metadata
 					return METADATA_EDITOR_ERROR_INVALID_PARAMETER;
 			}
 		}
-		case METADATA_EDITOR_FORMAT_OGG_VORBIS:
-		{
+		case METADATA_EDITOR_FORMAT_OGG_VORBIS: {
 			// Bring the pointer to actual file type and make tags pointers
 			TagLib::Ogg::Vorbis::File* _file = (TagLib::Ogg::Vorbis::File*)_metadata->file;
 			TagLib::Ogg::XiphComment* xtag = _file->tag();
@@ -1180,8 +1147,7 @@ extern "C" int metadata_editor_get_metadata(metadata_editor_h metadata, metadata
 					return METADATA_EDITOR_ERROR_INVALID_PARAMETER;
 			}
 		}
-		case METADATA_EDITOR_FORMAT_OGG_FLAC:
-		{
+		case METADATA_EDITOR_FORMAT_OGG_FLAC: {
 			// Bring the pointer to actual file type and make tags pointers
 			TagLib::Ogg::FLAC::File* _file = (TagLib::Ogg::FLAC::File*)_metadata->file;
 			TagLib::Ogg::XiphComment* xtag = _file->tag();
@@ -1207,8 +1173,7 @@ extern "C" int metadata_editor_get_metadata(metadata_editor_h metadata, metadata
 					return METADATA_EDITOR_ERROR_INVALID_PARAMETER;
 			}
 		}
-		case METADATA_EDITOR_FORMAT_WAV:
-		{
+		case METADATA_EDITOR_FORMAT_WAV: {
 			// Bring the pointer to actual file type and make tag pointers
 			TagLib::RIFF::WAV::File* _file = (TagLib::RIFF::WAV::File*)_metadata->file;
 			TagLib::ID3v2::Tag* tag2 = _file->tag();
@@ -1245,8 +1210,7 @@ extern "C" int metadata_editor_get_metadata(metadata_editor_h metadata, metadata
 }
 
 // *** This function is used to modify the metadata (frame in tag). But it does not apply changes to file *** //
-extern "C" int metadata_editor_set_metadata(metadata_editor_h metadata, metadata_editor_attr_e attribute, const char* value)
-{
+extern "C" int metadata_editor_set_metadata(metadata_editor_h metadata, metadata_editor_attr_e attribute, const char* value) {
 	// Check if we have valid arguments to work with
 	metadata_editor_retvm_if(metadata == NULL, METADATA_EDITOR_ERROR_INVALID_PARAMETER, "INVALID Handle");
 
@@ -1259,8 +1223,7 @@ extern "C" int metadata_editor_set_metadata(metadata_editor_h metadata, metadata
 	metadata_editor_retvm_if(_metadata->isReadOnly, METADATA_EDITOR_ERROR_OPERATION_FAILED, "File is readonly. Unable to modify\n");
 
 	switch (_metadata->filetype) {						// Process the file according to the specified file type
-		case METADATA_EDITOR_FORMAT_MP3:
-		{
+		case METADATA_EDITOR_FORMAT_MP3: {
 			// Bring the pointer to actual file type and make tags pointers
 			TagLib::MPEG::File* _file = (TagLib::MPEG::File*)_metadata->file;
 			TagLib::ID3v1::Tag* tag1 = _file->ID3v1Tag();
@@ -1285,8 +1248,7 @@ extern "C" int metadata_editor_set_metadata(metadata_editor_h metadata, metadata
 					return METADATA_EDITOR_ERROR_INVALID_PARAMETER;
 			}
 		}
-		case METADATA_EDITOR_FORMAT_MP4:
-		{
+		case METADATA_EDITOR_FORMAT_MP4: {
 			switch (attribute) {					// Check which one of frame type was given for processing
 				case METADATA_EDITOR_ATTR_ARTIST:			return __MP4_updateStringItem(_metadata, "\xA9""ART", value);
 				case METADATA_EDITOR_ATTR_TITLE:			return __MP4_updateStringItem(_metadata, "\xA9""nam", value);
@@ -1305,8 +1267,7 @@ extern "C" int metadata_editor_set_metadata(metadata_editor_h metadata, metadata
 			}
 		}
 #if 0
-		case METADATA_EDITOR_FORMAT_FLAC:
-		{
+		case METADATA_EDITOR_FORMAT_FLAC: {
 			// Bring the pointer to actual file type and make tags pointers
 			TagLib::FLAC::File* _file = (TagLib::FLAC::File*)_metadata->file;
 			TagLib::Ogg::XiphComment* xtag = _file->xiphComment(true);
@@ -1331,8 +1292,7 @@ extern "C" int metadata_editor_set_metadata(metadata_editor_h metadata, metadata
 					return METADATA_EDITOR_ERROR_INVALID_PARAMETER;
 			}
 		}
-		case METADATA_EDITOR_FORMAT_OGG_VORBIS:
-		{
+		case METADATA_EDITOR_FORMAT_OGG_VORBIS: {
 			// Bring the pointer to actual file type and make tags pointers
 			TagLib::Ogg::Vorbis::File* _file = (TagLib::Ogg::Vorbis::File*)_metadata->file;
 			TagLib::Ogg::XiphComment* xtag = _file->tag();
@@ -1357,8 +1317,7 @@ extern "C" int metadata_editor_set_metadata(metadata_editor_h metadata, metadata
 					return METADATA_EDITOR_ERROR_INVALID_PARAMETER;
 			}
 		}
-		case METADATA_EDITOR_FORMAT_OGG_FLAC:
-		{
+		case METADATA_EDITOR_FORMAT_OGG_FLAC: {
 			// Bring the pointer to actual file type and make tags pointers
 			TagLib::Ogg::FLAC::File* _file = (TagLib::Ogg::FLAC::File*)_metadata->file;
 			TagLib::Ogg::XiphComment* xtag = _file->tag();
@@ -1383,8 +1342,7 @@ extern "C" int metadata_editor_set_metadata(metadata_editor_h metadata, metadata
 					return METADATA_EDITOR_ERROR_INVALID_PARAMETER;
 			}
 		}
-		case METADATA_EDITOR_FORMAT_WAV:
-		{
+		case METADATA_EDITOR_FORMAT_WAV: {
 			// Bring the pointer to actual file type and make tags pointers
 			TagLib::RIFF::WAV::File* _file = (TagLib::RIFF::WAV::File*)_metadata->file;
 			TagLib::ID3v2::Tag* tag2 = _file->tag();
@@ -1419,8 +1377,7 @@ extern "C" int metadata_editor_set_metadata(metadata_editor_h metadata, metadata
 }
 
 // *** This function apply all changes done in the tag(s) and update them to file *** //
-extern "C" int metadata_editor_update_metadata(metadata_editor_h metadata)
-{
+extern "C" int metadata_editor_update_metadata(metadata_editor_h metadata) {
 	// Check if we have a valid argument to work with
 	metadata_editor_retvm_if(metadata == NULL, METADATA_EDITOR_ERROR_INVALID_PARAMETER, "INVALID Handle\n");
 
@@ -1432,8 +1389,7 @@ extern "C" int metadata_editor_update_metadata(metadata_editor_h metadata)
 	metadata_editor_retvm_if(_metadata->isReadOnly, METADATA_EDITOR_ERROR_OPERATION_FAILED, "File is readonly. Unable to modify\n");
 
 	switch (_metadata->filetype) {						// Process the file according to the specified file type
-		case METADATA_EDITOR_FORMAT_MP3:
-		{
+		case METADATA_EDITOR_FORMAT_MP3: {
 			// Bring the pointer to actual file type
 			TagLib::MPEG::File* _file = (TagLib::MPEG::File*)_metadata->file;
 
@@ -1451,8 +1407,7 @@ extern "C" int metadata_editor_update_metadata(metadata_editor_h metadata)
 					return METADATA_EDITOR_ERROR_OPERATION_FAILED;
 			}
 		}
-		case METADATA_EDITOR_FORMAT_MP4:
-		{
+		case METADATA_EDITOR_FORMAT_MP4: {
 			TagLib::MP4::File* _file = (TagLib::MP4::File*)_metadata->file;
 			if (_file->save())
 				return METADATA_EDITOR_ERROR_NONE;
@@ -1460,32 +1415,28 @@ extern "C" int metadata_editor_update_metadata(metadata_editor_h metadata)
 				return METADATA_EDITOR_ERROR_OPERATION_FAILED;
 		}
 #if 0
-		case METADATA_EDITOR_FORMAT_FLAC:
-		{
+		case METADATA_EDITOR_FORMAT_FLAC: {
 			TagLib::FLAC::File* _file = (TagLib::FLAC::File*)_metadata->file;
 			if (_file->save())
 				return METADATA_EDITOR_ERROR_NONE;
 			else
 				return METADATA_EDITOR_ERROR_OPERATION_FAILED;
 		}
-		case METADATA_EDITOR_FORMAT_OGG_VORBIS:
-		{
+		case METADATA_EDITOR_FORMAT_OGG_VORBIS: {
 			TagLib::Ogg::Vorbis::File* _file = (TagLib::Ogg::Vorbis::File*)_metadata->file;
 			if (_file->save())
 				return METADATA_EDITOR_ERROR_NONE;
 			else
 				return METADATA_EDITOR_ERROR_OPERATION_FAILED;
 		}
-		case METADATA_EDITOR_FORMAT_OGG_FLAC:
-		{
+		case METADATA_EDITOR_FORMAT_OGG_FLAC: {
 			TagLib::Ogg::FLAC::File* _file = (TagLib::Ogg::FLAC::File*)_metadata->file;
 			if (_file->save())
 				return METADATA_EDITOR_ERROR_NONE;
 			else
 				return METADATA_EDITOR_ERROR_OPERATION_FAILED;
 		}
-		case METADATA_EDITOR_FORMAT_WAV:
-		{
+		case METADATA_EDITOR_FORMAT_WAV: {
 			TagLib::RIFF::WAV::File* _file = (TagLib::RIFF::WAV::File*)_metadata->file;
 			if (_file->save())
 				return METADATA_EDITOR_ERROR_NONE;
@@ -1500,8 +1451,7 @@ extern "C" int metadata_editor_update_metadata(metadata_editor_h metadata)
 }
 
 // *** This function returns buffer with picture under the specified index and buffer's (picture's) size *** //
-extern "C" int metadata_editor_get_picture(metadata_editor_h metadata, int index, void **picture, int *size, char **mime_type)
-{
+extern "C" int metadata_editor_get_picture(metadata_editor_h metadata, int index, void **picture, int *size, char **mime_type) {
 	const char *TYPE_JPEG = "image/jpeg";
 	const char *TYPE_PNG = "image/png";
 	// Check if we have valid arguments to work with
@@ -1520,8 +1470,7 @@ extern "C" int metadata_editor_get_picture(metadata_editor_h metadata, int index
 	metadata_editor_retvm_if(_metadata->file && _metadata->isOpen == false, METADATA_EDITOR_ERROR_PERMISSION_DENIED, "File does not exist or you have no rights to open it\n");
 
 	switch (_metadata->filetype) {									// Process the file according to the specified file type
-		case METADATA_EDITOR_FORMAT_MP3:
-		{
+		case METADATA_EDITOR_FORMAT_MP3: {
 			TagLib::MPEG::File* _file = (TagLib::MPEG::File*)_metadata->file;		// Bring the pointer to actual file type
 			TagLib::ID3v2::Tag* tag2 = _file->ID3v2Tag();
 			metadata_editor_retvm_if(tag2 == NULL, METADATA_EDITOR_ERROR_OPERATION_FAILED, "Error. No ID3v2 tag in file.");
@@ -1563,8 +1512,7 @@ extern "C" int metadata_editor_get_picture(metadata_editor_h metadata, int index
 				}
 			}
 		}
-		case METADATA_EDITOR_FORMAT_MP4:
-		{
+		case METADATA_EDITOR_FORMAT_MP4: {
 			TagLib::MP4::File* _file = (TagLib::MP4::File*) _metadata->file;
 			TagLib::MP4::Tag* tag = _file->tag();
 			metadata_editor_retvm_if(tag == NULL, METADATA_EDITOR_ERROR_OPERATION_FAILED, "Tag does not exist\n");
@@ -1602,8 +1550,7 @@ extern "C" int metadata_editor_get_picture(metadata_editor_h metadata, int index
 			}
 		}
 #if 0
-		case METADATA_EDITOR_FORMAT_FLAC:
-		{
+		case METADATA_EDITOR_FORMAT_FLAC: {
 			TagLib::FLAC::File* _file = (TagLib::FLAC::File*) _metadata->file;
 			TagLib::List<TagLib::FLAC::Picture*> lst = _file->pictureList();
 			if (lst.isEmpty()) {
@@ -1641,8 +1588,7 @@ extern "C" int metadata_editor_get_picture(metadata_editor_h metadata, int index
 				}
 			}
 		}
-		case METADATA_EDITOR_FORMAT_WAV:
-		{
+		case METADATA_EDITOR_FORMAT_WAV: {
 			TagLib::RIFF::WAV::File* _file = (TagLib::RIFF::WAV::File*)_metadata->file;		// Bring the pointer to actual file type
 			TagLib::ID3v2::Tag* tag2 = _file->tag();
 			if (!tag2) {
@@ -1695,8 +1641,7 @@ extern "C" int metadata_editor_get_picture(metadata_editor_h metadata, int index
 }
 
 // *** This function appends a cover art picture to the file *** //
-extern "C" int metadata_editor_append_picture(metadata_editor_h metadata, const char *path)
-{
+extern "C" int metadata_editor_append_picture(metadata_editor_h metadata, const char *path) {
 	int ret = METADATA_EDITOR_ERROR_NONE;
 	void *picture = NULL;
 	int size = 0;
@@ -1717,8 +1662,7 @@ extern "C" int metadata_editor_append_picture(metadata_editor_h metadata, const 
 	metadata_editor_retvm_if(ret != METADATA_EDITOR_ERROR_NONE, METADATA_EDITOR_ERROR_PERMISSION_DENIED, "File does not exist or you have no rights to open it\n");
 
 	switch (_metadata->filetype) {					// Process the file according to the specified file type
-		case METADATA_EDITOR_FORMAT_MP3:
-		{
+		case METADATA_EDITOR_FORMAT_MP3: {
 			// Bring the pointer to actual file type and make tags pointers
 			TagLib::MPEG::File* _file = (TagLib::MPEG::File*)_metadata->file;
 			TagLib::ID3v2::Tag* tag2 = _file->ID3v2Tag(true);
@@ -1744,8 +1688,7 @@ extern "C" int metadata_editor_append_picture(metadata_editor_h metadata, const 
 			ret = METADATA_EDITOR_ERROR_NONE;
 			break;
 		}
-		case METADATA_EDITOR_FORMAT_MP4:
-		{
+		case METADATA_EDITOR_FORMAT_MP4: {
 			TagLib::MP4::File* _file = (TagLib::MP4::File*) _metadata->file;
 			TagLib::MP4::Tag* tag = _file->tag();
 			if (!tag) {
@@ -1792,8 +1735,7 @@ extern "C" int metadata_editor_append_picture(metadata_editor_h metadata, const 
 			}
 		}
 #if 0
-		case METADATA_EDITOR_FORMAT_FLAC:
-		{
+		case METADATA_EDITOR_FORMAT_FLAC: {
 			TagLib::FLAC::File* _file = (TagLib::FLAC::File*) _metadata->file;
 			TagLib::FLAC::Picture* frontCover = new TagLib::FLAC::Picture;
 			if (frontCover == NULL) {
@@ -1810,8 +1752,7 @@ extern "C" int metadata_editor_append_picture(metadata_editor_h metadata, const 
 			ret = METADATA_EDITOR_ERROR_NONE;
 			break;
 		}
-		case METADATA_EDITOR_FORMAT_WAV:
-		{
+		case METADATA_EDITOR_FORMAT_WAV: {
 			// Bring the pointer to actual file type and make tags pointers
 			TagLib::RIFF::WAV::File* _file = (TagLib::RIFF::WAV::File*)_metadata->file;
 			TagLib::ID3v2::Tag* tag2 = _file->tag();
@@ -1836,8 +1777,7 @@ extern "C" int metadata_editor_append_picture(metadata_editor_h metadata, const 
 			break;
 		}
 #endif
-		default:
-		{
+		default: {
 			metadata_editor_error("Wrong file type\n");
 			ret = METADATA_EDITOR_ERROR_NOT_SUPPORTED;
 			break;
@@ -1851,8 +1791,7 @@ extern "C" int metadata_editor_append_picture(metadata_editor_h metadata, const 
 }
 
 // *** This function is used to delete picture with specified index *** //
-extern "C" int metadata_editor_remove_picture(metadata_editor_h metadata, int index)
-{
+extern "C" int metadata_editor_remove_picture(metadata_editor_h metadata, int index) {
 	// Check if we have a valid argument to work with
 	metadata_editor_retvm_if(metadata == NULL, METADATA_EDITOR_ERROR_INVALID_PARAMETER, "INVALID handler.");
 
@@ -1864,8 +1803,7 @@ extern "C" int metadata_editor_remove_picture(metadata_editor_h metadata, int in
 	metadata_editor_retvm_if(_metadata->isReadOnly, METADATA_EDITOR_ERROR_OPERATION_FAILED, "File is readonly. Unable to modify\n");
 
 	switch (_metadata->filetype) {					// Process the file according to the specified file type
-		case METADATA_EDITOR_FORMAT_MP3:
-		{
+		case METADATA_EDITOR_FORMAT_MP3: {
 			// Bring the pointer to actual file type and make tags pointers
 			TagLib::MPEG::File* _file = (TagLib::MPEG::File*)_metadata->file;
 			TagLib::ID3v2::Tag* tag2 = _file->ID3v2Tag(true);
@@ -1894,8 +1832,7 @@ extern "C" int metadata_editor_remove_picture(metadata_editor_h metadata, int in
 				}
 			}
 		}
-		case METADATA_EDITOR_FORMAT_MP4:
-		{
+		case METADATA_EDITOR_FORMAT_MP4: {
 			TagLib::MP4::File* _file = (TagLib::MP4::File*) _metadata->file;
 			TagLib::MP4::Tag* tag = _file->tag();
 			metadata_editor_retvm_if(tag == NULL, METADATA_EDITOR_ERROR_OPERATION_FAILED, "Error. tag not exist.");
@@ -1926,8 +1863,7 @@ extern "C" int metadata_editor_remove_picture(metadata_editor_h metadata, int in
 			}
 		}
 #if 0
-		case METADATA_EDITOR_FORMAT_FLAC:
-		{
+		case METADATA_EDITOR_FORMAT_FLAC: {
 			TagLib::FLAC::File* _file = (TagLib::FLAC::File*) _metadata->file;
 			TagLib::List<TagLib::FLAC::Picture*> lst = _file->pictureList();
 			if (lst.isEmpty()) {
@@ -1949,8 +1885,7 @@ extern "C" int metadata_editor_remove_picture(metadata_editor_h metadata, int in
 				return METADATA_EDITOR_ERROR_NONE;
 			}
 		}
-		case METADATA_EDITOR_FORMAT_WAV:
-		{
+		case METADATA_EDITOR_FORMAT_WAV: {
 			// Bring the pointer to actual file type and make tags pointers
 			TagLib::RIFF::WAV::File* _file = (TagLib::RIFF::WAV::File*)_metadata->file;
 			TagLib::ID3v2::Tag* tag2 = _file->tag();
@@ -1990,53 +1925,46 @@ extern "C" int metadata_editor_remove_picture(metadata_editor_h metadata, int in
 }
 
 // *** This function is used to free memory that was allocated with metadata_editor_create(...) and metadata_editor_set_path(...) functions *** //
-extern "C" int metadata_editor_destroy(metadata_editor_h metadata)
-{
+extern "C" int metadata_editor_destroy(metadata_editor_h metadata) {
 	// Check if we have a valid argument to work with
 	metadata_editor_retvm_if(metadata == NULL, METADATA_EDITOR_ERROR_INVALID_PARAMETER, "INVALID PARAMETER");
 
 	metadata_editor_s *_metadata = (metadata_editor_s*)metadata;
 
 	switch (_metadata->filetype) {
-		case METADATA_EDITOR_FORMAT_MP3:
-		{
+		case METADATA_EDITOR_FORMAT_MP3: {
 			// Bring the pointer to actual file type
 			TagLib::MPEG::File* _file = (TagLib::MPEG::File*)_metadata->file;
 			metadata_editor_info("file free [%lX]", _metadata->file);
 			delete _file;
 			break;
 		}
-		case METADATA_EDITOR_FORMAT_MP4:
-		{
+		case METADATA_EDITOR_FORMAT_MP4: {
 			TagLib::MP4::File* _file = (TagLib::MP4::File*)_metadata->file;
 			metadata_editor_info("file free [%lX]", _metadata->file);
 			delete _file;
 			break;
 		}
 #if 0
-		case METADATA_EDITOR_FORMAT_FLAC:
-		{
+		case METADATA_EDITOR_FORMAT_FLAC: {
 			TagLib::FLAC::File* _file = (TagLib::FLAC::File*)_metadata->file;
 			metadata_editor_info("file free [%lX]", _metadata->file);
 			delete _file;
 			break;
 		}
-		case METADATA_EDITOR_FORMAT_OGG_VORBIS:
-		{
+		case METADATA_EDITOR_FORMAT_OGG_VORBIS: {
 			TagLib::Ogg::Vorbis::File* _file = (TagLib::Ogg::Vorbis::File*)_metadata->file;
 			metadata_editor_info("file free [%lX]", _metadata->file);
 			delete _file;
 			break;
 		}
-		case METADATA_EDITOR_FORMAT_OGG_FLAC:
-		{
+		case METADATA_EDITOR_FORMAT_OGG_FLAC: {
 			TagLib::Ogg::FLAC::File* _file = (TagLib::Ogg::FLAC::File*)_metadata->file;
 			metadata_editor_info("file free [%lX]", _metadata->file);
 			delete _file;
 			break;
 		}
-		case METADATA_EDITOR_FORMAT_WAV:
-		{
+		case METADATA_EDITOR_FORMAT_WAV: {
 			TagLib::RIFF::WAV::File* _file = (TagLib::RIFF::WAV::File*)_metadata->file;
 			metadata_editor_info("file free [%lX]", _metadata->file);
 			delete _file;
